@@ -14,7 +14,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { mockUsers, mockProjects, mockAcquirers, mockSubmerchants } from '@/lib/mock-data'
+import { users, projects, acquirers, submerchants } from '@/lib/mock-data'
 import { AlertCircle } from 'lucide-react'
 
 type AssignmentType = 'user-project' | 'project-acquirer' | 'acquirer-submerchant'
@@ -199,12 +199,12 @@ function UserProjectAssignment({
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
 
-  const filteredUsers = mockUsers.filter((u) =>
+  const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(searchUsers.toLowerCase()) ||
     u.email.toLowerCase().includes(searchUsers.toLowerCase())
   )
 
-  const filteredProjects = mockProjects.filter((p) =>
+  const filteredProjects = projects.filter((p) =>
     p.name.toLowerCase().includes(searchProjects.toLowerCase())
   )
 
@@ -292,8 +292,8 @@ function UserProjectAssignment({
       <div className="md:col-span-2">
         <Button
           onClick={() => {
-            const selectedUserObjs = mockUsers.filter((u) => selectedUsers.includes(u.id))
-            const selectedProjectObjs = mockProjects.filter((p) => p.id === selectedProject)
+            const selectedUserObjs = users.filter((u) => selectedUsers.includes(u.id))
+            const selectedProjectObjs = projects.filter((p) => p.id === selectedProject)
             onConfirm(selectedUserObjs, selectedProjectObjs)
           }}
           disabled={!canAssign}
@@ -317,11 +317,11 @@ function ProjectAcquirerAssignment({
   const [selectedProjects, setSelectedProjects] = useState<string[]>([])
   const [selectedAcquirer, setSelectedAcquirer] = useState<string | null>(null)
 
-  const filteredProjects = mockProjects.filter((p) =>
+  const filteredProjects = projects.filter((p) =>
     p.name.toLowerCase().includes(searchProjects.toLowerCase())
   )
 
-  const filteredAcquirers = mockAcquirers.filter((a) =>
+  const filteredAcquirers = acquirers.filter((a) =>
     a.name.toLowerCase().includes(searchAcquirers.toLowerCase())
   )
 
@@ -408,8 +408,8 @@ function ProjectAcquirerAssignment({
       <div className="md:col-span-2">
         <Button
           onClick={() => {
-            const selectedProjectObjs = mockProjects.filter((p) => selectedProjects.includes(p.id))
-            const selectedAcquirerObjs = mockAcquirers.filter((a) => a.id === selectedAcquirer)
+            const selectedProjectObjs = projects.filter((p) => selectedProjects.includes(p.id))
+            const selectedAcquirerObjs = acquirers.filter((a) => a.id === selectedAcquirer)
             onConfirm(selectedProjectObjs, selectedAcquirerObjs)
           }}
           disabled={!canAssign}
@@ -432,9 +432,9 @@ function AcquirerSubmerchantForm({
   const [searchSubmerchants, setSearchSubmerchants] = useState('')
   const [selectedSubmerchants, setSelectedSubmerchants] = useState<string[]>([])
 
-  const selectedAcquirerObj = mockAcquirers.find((a) => a.id === selectedAcquirer)
+  const selectedAcquirerObj = acquirers.find((a) => a.id === selectedAcquirer)
 
-  const filteredSubmerchants = mockSubmerchants.filter((s) =>
+  const filteredSubmerchants = submerchants.filter((s) =>
     s.name.toLowerCase().includes(searchSubmerchants.toLowerCase())
   )
 
@@ -450,7 +450,7 @@ function AcquirerSubmerchantForm({
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {mockAcquirers.map((acquirer) => (
+            {acquirers.map((acquirer) => (
               <Card
                 key={acquirer.id}
                 className={`cursor-pointer transition-colors ${
@@ -527,7 +527,7 @@ function AcquirerSubmerchantForm({
 
             <Button
               onClick={() => {
-                const selectedSubmerchantObjs = mockSubmerchants.filter((s) =>
+                const selectedSubmerchantObjs = submerchants.filter((s) =>
                   selectedSubmerchants.includes(s.id)
                 )
                 onConfirm(selectedAcquirerObj, selectedSubmerchantObjs)
