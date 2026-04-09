@@ -52,7 +52,7 @@ export default function SubmerchantPage() {
   const statuses = Array.from(new Set(submerchants.map(s => s.status)))
 
   return (
-    <MainLayout>
+    <div>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -192,6 +192,6 @@ export default function SubmerchantPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </div>
   )
 }

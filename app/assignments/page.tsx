@@ -1,9 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { AlertCircle } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -14,55 +22,99 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { users, projects, acquirers, submerchants } from '@/lib/mock-data'
-import { AlertCircle } from 'lucide-react'
 
-type AssignmentType = 'user-project' | 'project-acquirer' | 'acquirer-submerchant'
+import { users, projects, acquirers, submerchants } from '@/lib/mock-data'
+
+type AssignmentType =
+  | 'user-project'
+  | 'project-acquirer'
+  | 'acquirer-submerchant'
+
+type BaseItem = {
+  id: string
+  name?: string
+  email?: string
+  description?: string
+  project_name?: string
+  sub_merchant_name?: string
+  sub_merchant_id?: string
+}
+
+type UserItem = BaseItem & {
+  email?: string
+}
+
+type ProjectItem = BaseItem & {
+  description?: string
+}
+
+type AcquirerItem = BaseItem
+
+type SubmerchantItem = BaseItem & {
+  sub_merchant_name?: string
+  sub_merchant_id?: string
+}
+
+type PendingAssignment = {
+  type: AssignmentType
+  items: BaseItem[]
+  relatedItem?: BaseItem
+}
+
+function getItemName(item: BaseItem) {
+  return item.name || item.project_name || item.sub_merchant_name || '-'
+}
+
+function getProjectDescription(project: ProjectItem) {
+  return project.description || 'No description available'
+}
 
 export default function AssignmentsPage() {
-  const [assignmentType, setAssignmentType] = useState<AssignmentType>('user-project')
+  const [assignmentType, setAssignmentType] =
+    useState<AssignmentType>('user-project')
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
-  const [pendingAssignment, setPendingAssignment] = useState<{
-    type: AssignmentType
-    items: any[]
-    relatedItem?: any
-  } | null>(null)
+  const [pendingAssignment, setPendingAssignment] =
+    useState<PendingAssignment | null>(null)
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Assignments</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage relationships between users, projects, acquirers, and submerchants
+        <p className="mt-2 text-muted-foreground">
+          Manage relationships between users, projects, acquirers, and
+          submerchants
         </p>
       </div>
 
-      {/* Assignment Type Selector */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Select Assignment Type</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant={assignmentType === 'user-project' ? 'default' : 'outline'}
               onClick={() => setAssignmentType('user-project')}
-              className={assignmentType === 'user-project' ? 'bg-primary text-primary-foreground' : ''}
             >
               User → Project
             </Button>
+
             <Button
-              variant={assignmentType === 'project-acquirer' ? 'default' : 'outline'}
+              variant={
+                assignmentType === 'project-acquirer' ? 'default' : 'outline'
+              }
               onClick={() => setAssignmentType('project-acquirer')}
-              className={assignmentType === 'project-acquirer' ? 'bg-primary text-primary-foreground' : ''}
             >
               Project → Acquirer
             </Button>
+
             <Button
-              variant={assignmentType === 'acquirer-submerchant' ? 'default' : 'outline'}
+              variant={
+                assignmentType === 'acquirer-submerchant'
+                  ? 'default'
+                  : 'outline'
+              }
               onClick={() => setAssignmentType('acquirer-submerchant')}
-              className={assignmentType === 'acquirer-submerchant' ? 'bg-primary text-primary-foreground' : ''}
             >
               Acquirer → Submerchant
             </Button>
@@ -70,7 +122,6 @@ export default function AssignmentsPage() {
         </CardContent>
       </Card>
 
-      {/* Assignment Content */}
       <div>
         {assignmentType === 'user-project' && (
           <UserProjectAssignment
@@ -100,10 +151,10 @@ export default function AssignmentsPage() {
 
         {assignmentType === 'acquirer-submerchant' && (
           <AcquirerSubmerchantForm
-            onConfirm={(acquirer, submerchants) => {
+            onConfirm={(acquirer, selectedSubmerchants) => {
               setPendingAssignment({
                 type: 'acquirer-submerchant',
-                items: submerchants,
+                items: selectedSubmerchants,
                 relatedItem: acquirer,
               })
               setConfirmDialogOpen(true)
@@ -112,36 +163,40 @@ export default function AssignmentsPage() {
         )}
       </div>
 
-      {/* Confirmation Dialog */}
       <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Assignment</DialogTitle>
             <DialogDescription>
-              Please review the assignment details before confirming
+              Please review the assignment details before confirming.
             </DialogDescription>
           </DialogHeader>
+
           {pendingAssignment && (
             <div className="space-y-4">
-              <div className="bg-muted p-4 rounded-lg space-y-3">
+              <div className="space-y-3 rounded-lg bg-muted p-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Assignment Type</p>
-                  <p className="text-foreground font-semibold capitalize">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Assignment Type
+                  </p>
+                  <p className="font-semibold text-foreground capitalize">
                     {pendingAssignment.type.replace('-', ' → ')}
                   </p>
                 </div>
+
                 {pendingAssignment.relatedItem && (
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">
                       {pendingAssignment.type === 'user-project'
                         ? 'Project'
-                        : pendingAssignment.type === 'project-acquirer'
-                        ? 'Acquirer'
                         : 'Acquirer'}
                     </p>
-                    <p className="text-foreground font-semibold">{pendingAssignment.relatedItem.name}</p>
+                    <p className="font-semibold text-foreground">
+                      {getItemName(pendingAssignment.relatedItem)}
+                    </p>
                   </div>
                 )}
+
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
                     {pendingAssignment.type === 'user-project'
@@ -151,29 +206,35 @@ export default function AssignmentsPage() {
                       : 'Submerchants'}{' '}
                     ({pendingAssignment.items.length})
                   </p>
-                  <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
+
+                  <div className="mt-2 max-h-48 space-y-1 overflow-y-auto">
                     {pendingAssignment.items.map((item) => (
                       <p key={item.id} className="text-sm text-foreground">
-                        • {item.name}
+                        • {getItemName(item)}
                       </p>
                     ))}
                   </div>
                 </div>
               </div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex gap-3">
-                <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+
+              <div className="flex gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+                <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-600" />
                 <p className="text-sm text-yellow-800">
-                  Please ensure all information is correct before confirming this assignment.
+                  Please ensure all information is correct before confirming
+                  this assignment.
                 </p>
               </div>
             </div>
           )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setConfirmDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
               onClick={() => {
                 setConfirmDialogOpen(false)
                 setPendingAssignment(null)
@@ -188,35 +249,42 @@ export default function AssignmentsPage() {
   )
 }
 
-// Flow 1: User → Project Assignment
 function UserProjectAssignment({
   onConfirm,
 }: {
-  onConfirm: (users: any[], projects: any[]) => void
+  onConfirm: (users: UserItem[], projects: ProjectItem[]) => void
 }) {
   const [searchUsers, setSearchUsers] = useState('')
   const [searchProjects, setSearchProjects] = useState('')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
 
-  const filteredUsers = users.filter((u) =>
-    u.name.toLowerCase().includes(searchUsers.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchUsers.toLowerCase())
-  )
+  const filteredUsers = useMemo(() => {
+    return (users as UserItem[]).filter((user) => {
+      const query = searchUsers.toLowerCase()
+      return (
+        getItemName(user).toLowerCase().includes(query) ||
+        (user.email || '').toLowerCase().includes(query)
+      )
+    })
+  }, [searchUsers])
 
-  const filteredProjects = projects.filter((p) =>
-    p.name.toLowerCase().includes(searchProjects.toLowerCase())
-  )
+  const filteredProjects = useMemo(() => {
+    return (projects as ProjectItem[]).filter((project) =>
+      getItemName(project).toLowerCase().includes(searchProjects.toLowerCase())
+    )
+  }, [searchProjects])
 
-  const canAssign = selectedUsers.length > 0 && selectedProject
+  const canAssign = selectedUsers.length > 0 && !!selectedProject
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Users Panel */}
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Select Users</CardTitle>
-          <CardDescription>Choose users to assign ({selectedUsers.length} selected)</CardDescription>
+          <CardDescription>
+            Choose users to assign ({selectedUsers.length} selected)
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -224,23 +292,35 @@ function UserProjectAssignment({
             value={searchUsers}
             onChange={(e) => setSearchUsers(e.target.value)}
           />
-          <ScrollArea className="h-96 border rounded-lg">
-            <div className="p-4 space-y-3">
+
+          <ScrollArea className="h-96 rounded-lg border">
+            <div className="space-y-3 p-4">
               {filteredUsers.map((user) => (
-                <label key={user.id} className="flex items-center gap-3 cursor-pointer">
+                <label
+                  key={user.id}
+                  className="flex cursor-pointer items-center gap-3"
+                >
                   <Checkbox
                     checked={selectedUsers.includes(user.id)}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        setSelectedUsers([...selectedUsers, user.id])
-                      } else {
-                        setSelectedUsers(selectedUsers.filter((id) => id !== user.id))
+                        setSelectedUsers((prev) => [...prev, user.id])
+                        return
                       }
+
+                      setSelectedUsers((prev) =>
+                        prev.filter((id) => id !== user.id)
+                      )
                     }}
                   />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {getItemName(user)}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user.email || '-'}
+                    </p>
                   </div>
                 </label>
               ))}
@@ -249,12 +329,12 @@ function UserProjectAssignment({
         </CardContent>
       </Card>
 
-      {/* Projects Panel */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Select Project</CardTitle>
           <CardDescription>
-            Choose a project to assign users to{selectedProject ? ' (Selected)' : ''}
+            Choose a project to assign users to
+            {selectedProject ? ' (Selected)' : ''}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -263,23 +343,33 @@ function UserProjectAssignment({
             value={searchProjects}
             onChange={(e) => setSearchProjects(e.target.value)}
           />
-          <ScrollArea className="h-96 border rounded-lg">
-            <div className="p-4 space-y-3">
+
+          <ScrollArea className="h-96 rounded-lg border">
+            <div className="space-y-3 p-4">
               {filteredProjects.map((project) => (
-                <label key={project.id} className="flex items-center gap-3 cursor-pointer">
+                <label
+                  key={project.id}
+                  className="flex cursor-pointer items-center gap-3"
+                >
                   <Checkbox
                     checked={selectedProject === project.id}
                     onCheckedChange={(checked) => {
                       if (checked) {
                         setSelectedProject(project.id)
-                      } else {
-                        setSelectedProject(null)
+                        return
                       }
+
+                      setSelectedProject(null)
                     }}
                   />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
-                    <p className="text-xs text-muted-foreground">{project.description}</p>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {getItemName(project)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {getProjectDescription(project)}
+                    </p>
                   </div>
                 </label>
               ))}
@@ -288,16 +378,20 @@ function UserProjectAssignment({
         </CardContent>
       </Card>
 
-      {/* Action Button */}
       <div className="md:col-span-2">
         <Button
-          onClick={() => {
-            const selectedUserObjs = users.filter((u) => selectedUsers.includes(u.id))
-            const selectedProjectObjs = projects.filter((p) => p.id === selectedProject)
-            onConfirm(selectedUserObjs, selectedProjectObjs)
-          }}
+          className="w-full"
           disabled={!canAssign}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          onClick={() => {
+            const selectedUserObjects = (users as UserItem[]).filter((user) =>
+              selectedUsers.includes(user.id)
+            )
+            const selectedProjectObjects = (projects as ProjectItem[]).filter(
+              (project) => project.id === selectedProject
+            )
+
+            onConfirm(selectedUserObjects, selectedProjectObjects)
+          }}
         >
           Assign Users to Project
         </Button>
@@ -306,34 +400,40 @@ function UserProjectAssignment({
   )
 }
 
-// Flow 2: Project → Acquirer Assignment
 function ProjectAcquirerAssignment({
   onConfirm,
 }: {
-  onConfirm: (projects: any[], acquirers: any[]) => void
+  onConfirm: (projects: ProjectItem[], acquirers: AcquirerItem[]) => void
 }) {
   const [searchProjects, setSearchProjects] = useState('')
   const [searchAcquirers, setSearchAcquirers] = useState('')
   const [selectedProjects, setSelectedProjects] = useState<string[]>([])
   const [selectedAcquirer, setSelectedAcquirer] = useState<string | null>(null)
 
-  const filteredProjects = projects.filter((p) =>
-    p.name.toLowerCase().includes(searchProjects.toLowerCase())
-  )
+  const filteredProjects = useMemo(() => {
+    return (projects as ProjectItem[]).filter((project) =>
+      getItemName(project).toLowerCase().includes(searchProjects.toLowerCase())
+    )
+  }, [searchProjects])
 
-  const filteredAcquirers = acquirers.filter((a) =>
-    a.name.toLowerCase().includes(searchAcquirers.toLowerCase())
-  )
+  const filteredAcquirers = useMemo(() => {
+    return (acquirers as AcquirerItem[]).filter((acquirer) =>
+      getItemName(acquirer)
+        .toLowerCase()
+        .includes(searchAcquirers.toLowerCase())
+    )
+  }, [searchAcquirers])
 
-  const canAssign = selectedProjects.length > 0 && selectedAcquirer
+  const canAssign = selectedProjects.length > 0 && !!selectedAcquirer
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Projects Panel */}
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Select Projects</CardTitle>
-          <CardDescription>Choose projects to link ({selectedProjects.length} selected)</CardDescription>
+          <CardDescription>
+            Choose projects to link ({selectedProjects.length} selected)
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input
@@ -341,23 +441,35 @@ function ProjectAcquirerAssignment({
             value={searchProjects}
             onChange={(e) => setSearchProjects(e.target.value)}
           />
-          <ScrollArea className="h-96 border rounded-lg">
-            <div className="p-4 space-y-3">
+
+          <ScrollArea className="h-96 rounded-lg border">
+            <div className="space-y-3 p-4">
               {filteredProjects.map((project) => (
-                <label key={project.id} className="flex items-center gap-3 cursor-pointer">
+                <label
+                  key={project.id}
+                  className="flex cursor-pointer items-center gap-3"
+                >
                   <Checkbox
                     checked={selectedProjects.includes(project.id)}
                     onCheckedChange={(checked) => {
                       if (checked) {
-                        setSelectedProjects([...selectedProjects, project.id])
-                      } else {
-                        setSelectedProjects(selectedProjects.filter((id) => id !== project.id))
+                        setSelectedProjects((prev) => [...prev, project.id])
+                        return
                       }
+
+                      setSelectedProjects((prev) =>
+                        prev.filter((id) => id !== project.id)
+                      )
                     }}
                   />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{project.name}</p>
-                    <p className="text-xs text-muted-foreground">{project.description}</p>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {getItemName(project)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {getProjectDescription(project)}
+                    </p>
                   </div>
                 </label>
               ))}
@@ -366,12 +478,12 @@ function ProjectAcquirerAssignment({
         </CardContent>
       </Card>
 
-      {/* Acquirers Panel */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Select Acquirer</CardTitle>
           <CardDescription>
-            Choose an acquirer to link projects to{selectedAcquirer ? ' (Selected)' : ''}
+            Choose an acquirer to link projects to
+            {selectedAcquirer ? ' (Selected)' : ''}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -380,22 +492,30 @@ function ProjectAcquirerAssignment({
             value={searchAcquirers}
             onChange={(e) => setSearchAcquirers(e.target.value)}
           />
-          <ScrollArea className="h-96 border rounded-lg">
-            <div className="p-4 space-y-3">
+
+          <ScrollArea className="h-96 rounded-lg border">
+            <div className="space-y-3 p-4">
               {filteredAcquirers.map((acquirer) => (
-                <label key={acquirer.id} className="flex items-center gap-3 cursor-pointer">
+                <label
+                  key={acquirer.id}
+                  className="flex cursor-pointer items-center gap-3"
+                >
                   <Checkbox
                     checked={selectedAcquirer === acquirer.id}
                     onCheckedChange={(checked) => {
                       if (checked) {
                         setSelectedAcquirer(acquirer.id)
-                      } else {
-                        setSelectedAcquirer(null)
+                        return
                       }
+
+                      setSelectedAcquirer(null)
                     }}
                   />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{acquirer.name}</p>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {getItemName(acquirer)}
+                    </p>
                   </div>
                 </label>
               ))}
@@ -404,16 +524,20 @@ function ProjectAcquirerAssignment({
         </CardContent>
       </Card>
 
-      {/* Action Button */}
       <div className="md:col-span-2">
         <Button
-          onClick={() => {
-            const selectedProjectObjs = projects.filter((p) => selectedProjects.includes(p.id))
-            const selectedAcquirerObjs = acquirers.filter((a) => a.id === selectedAcquirer)
-            onConfirm(selectedProjectObjs, selectedAcquirerObjs)
-          }}
+          className="w-full"
           disabled={!canAssign}
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          onClick={() => {
+            const selectedProjectObjects = (projects as ProjectItem[]).filter(
+              (project) => selectedProjects.includes(project.id)
+            )
+            const selectedAcquirerObjects = (
+              acquirers as AcquirerItem[]
+            ).filter((acquirer) => acquirer.id === selectedAcquirer)
+
+            onConfirm(selectedProjectObjects, selectedAcquirerObjects)
+          }}
         >
           Link Projects to Acquirer
         </Button>
@@ -422,35 +546,42 @@ function ProjectAcquirerAssignment({
   )
 }
 
-// Flow 3: Acquirer → Submerchant Assignment (Form-based)
 function AcquirerSubmerchantForm({
   onConfirm,
 }: {
-  onConfirm: (acquirer: any, submerchants: any[]) => void
+  onConfirm: (acquirer: AcquirerItem, submerchants: SubmerchantItem[]) => void
 }) {
   const [selectedAcquirer, setSelectedAcquirer] = useState<string | null>(null)
   const [searchSubmerchants, setSearchSubmerchants] = useState('')
   const [selectedSubmerchants, setSelectedSubmerchants] = useState<string[]>([])
 
-  const selectedAcquirerObj = acquirers.find((a) => a.id === selectedAcquirer)
-
-  const filteredSubmerchants = submerchants.filter((s) =>
-    s.name.toLowerCase().includes(searchSubmerchants.toLowerCase())
+  const selectedAcquirerObject = (acquirers as AcquirerItem[]).find(
+    (acquirer) => acquirer.id === selectedAcquirer
   )
 
-  const canAssign = selectedAcquirer && selectedSubmerchants.length > 0
+  const filteredSubmerchants = useMemo(() => {
+    return (submerchants as SubmerchantItem[]).filter((submerchant) =>
+      getItemName(submerchant)
+        .toLowerCase()
+        .includes(searchSubmerchants.toLowerCase())
+    )
+  }, [searchSubmerchants])
+
+  const canAssign = !!selectedAcquirer && selectedSubmerchants.length > 0
 
   return (
     <div className="space-y-6">
-      {/* Step 1: Select Acquirer */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Step 1: Select Acquirer</CardTitle>
-          <CardDescription>Choose an acquirer to register submerchants under</CardDescription>
+          <CardDescription>
+            Choose an acquirer to register submerchants under
+          </CardDescription>
         </CardHeader>
+
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {acquirers.map((acquirer) => (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {(acquirers as AcquirerItem[]).map((acquirer) => (
               <Card
                 key={acquirer.id}
                 className={`cursor-pointer transition-colors ${
@@ -466,13 +597,22 @@ function AcquirerSubmerchantForm({
                 <CardContent className="pt-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-semibold text-foreground">{acquirer.name}</p>
-                      <p className="text-xs text-muted-foreground mt-1">ID: {acquirer.id}</p>
+                      <p className="font-semibold text-foreground">
+                        {getItemName(acquirer)}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        ID: {acquirer.id}
+                      </p>
                     </div>
+
                     {selectedAcquirer === acquirer.id && (
-                      <div className="w-5 h-5 bg-primary rounded-full text-primary-foreground flex items-center justify-center">
-                        <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <svg className="h-3 w-3 fill-current" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            clipRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          />
                         </svg>
                       </div>
                     )}
@@ -484,41 +624,59 @@ function AcquirerSubmerchantForm({
         </CardContent>
       </Card>
 
-      {/* Step 2: Register Submerchants */}
-      {selectedAcquirerObj && (
+      {selectedAcquirerObject ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Step 2: Register Submerchants</CardTitle>
+            <CardTitle className="text-lg">
+              Step 2: Register Submerchants
+            </CardTitle>
             <CardDescription>
-              Add submerchants to <span className="font-semibold">{selectedAcquirerObj.name}</span> (
-              {selectedSubmerchants.length} selected)
+              Add submerchants to{' '}
+              <span className="font-semibold">
+                {getItemName(selectedAcquirerObject)}
+              </span>{' '}
+              ({selectedSubmerchants.length} selected)
             </CardDescription>
           </CardHeader>
+
           <CardContent className="space-y-4">
             <Input
               placeholder="Search submerchants..."
               value={searchSubmerchants}
               onChange={(e) => setSearchSubmerchants(e.target.value)}
             />
-            <ScrollArea className="h-96 border rounded-lg">
-              <div className="p-4 space-y-3">
+
+            <ScrollArea className="h-96 rounded-lg border">
+              <div className="space-y-3 p-4">
                 {filteredSubmerchants.map((submerchant) => (
-                  <label key={submerchant.id} className="flex items-center gap-3 cursor-pointer">
+                  <label
+                    key={submerchant.id}
+                    className="flex cursor-pointer items-center gap-3"
+                  >
                     <Checkbox
                       checked={selectedSubmerchants.includes(submerchant.id)}
                       onCheckedChange={(checked) => {
                         if (checked) {
-                          setSelectedSubmerchants([...selectedSubmerchants, submerchant.id])
-                        } else {
-                          setSelectedSubmerchants(
-                            selectedSubmerchants.filter((id) => id !== submerchant.id)
-                          )
+                          setSelectedSubmerchants((prev) => [
+                            ...prev,
+                            submerchant.id,
+                          ])
+                          return
                         }
+
+                        setSelectedSubmerchants((prev) =>
+                          prev.filter((id) => id !== submerchant.id)
+                        )
                       }}
                     />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{submerchant.name}</p>
-                      <p className="text-xs text-muted-foreground">{submerchant.id}</p>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {getItemName(submerchant)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {submerchant.sub_merchant_id || submerchant.id}
+                      </p>
                     </div>
                   </label>
                 ))}
@@ -526,248 +684,33 @@ function AcquirerSubmerchantForm({
             </ScrollArea>
 
             <Button
-              onClick={() => {
-                const selectedSubmerchantObjs = submerchants.filter((s) =>
-                  selectedSubmerchants.includes(s.id)
-                )
-                onConfirm(selectedAcquirerObj, selectedSubmerchantObjs)
-              }}
+              className="w-full"
               disabled={!canAssign}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              onClick={() => {
+                if (!selectedAcquirerObject) return
+
+                const selectedSubmerchantObjects = (
+                  submerchants as SubmerchantItem[]
+                ).filter((submerchant) =>
+                  selectedSubmerchants.includes(submerchant.id)
+                )
+
+                onConfirm(selectedAcquirerObject, selectedSubmerchantObjects)
+              }}
             >
               Register Submerchants
             </Button>
           </CardContent>
         </Card>
-      )}
-
-      {!selectedAcquirerObj && (
+      ) : (
         <Card className="border-dashed">
-          <CardContent className="pt-8 pb-8 text-center">
-            <p className="text-muted-foreground">Select an acquirer to get started</p>
+          <CardContent className="pb-8 pt-8 text-center">
+            <p className="text-muted-foreground">
+              Select an acquirer to get started
+            </p>
           </CardContent>
         </Card>
       )}
     </div>
-  )
-}
-
-  return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Assignments</h1>
-          <p className="text-muted-foreground mt-2">Manage relationships between entities</p>
-        </div>
-
-        {/* Assignment Type Selector */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex gap-4 flex-wrap">
-              <Button
-                variant={assignmentType === 'submerchant-acquirer' ? 'default' : 'outline'}
-                onClick={() => {
-                  setAssignmentType('submerchant-acquirer')
-                  setSelectedLeft(new Set())
-                  setSelectedRight(new Set())
-                  setSearchLeft('')
-                  setSearchRight('')
-                }}
-              >
-                Submerchant ↔ Acquirer
-              </Button>
-              <Button
-                variant={assignmentType === 'user-project' ? 'default' : 'outline'}
-                onClick={() => {
-                  setAssignmentType('user-project')
-                  setSelectedLeft(new Set())
-                  setSelectedRight(new Set())
-                  setSearchLeft('')
-                  setSearchRight('')
-                }}
-              >
-                User ↔ Project
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Assignment Panel */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Create Assignment</CardTitle>
-            <CardDescription>
-              Select {leftLabel.toLowerCase()} and {rightLabel.toLowerCase()} to create relationships
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
-              {/* Left Panel - Submerchants/Acquirers */}
-              <div className="border rounded-lg p-4 bg-muted/50">
-                <div className="mb-4">
-                  <h3 className="font-semibold text-foreground mb-3">{leftLabel}s</h3>
-                  <Input
-                    placeholder={`Search ${leftLabel.toLowerCase()}...`}
-                    value={searchLeft}
-                    onChange={(e) => setSearchLeft(e.target.value)}
-                    className="mb-4"
-                  />
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {leftPanel.map((item) => (
-                      <label
-                        key={item.id}
-                        className="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-background transition-colors"
-                      >
-                        <Checkbox
-                          checked={selectedLeft.has(item.id)}
-                          onCheckedChange={(checked) => {
-                            const newSet = new Set(selectedLeft)
-                            if (checked) {
-                              newSet.add(item.id)
-                            } else {
-                              newSet.delete(item.id)
-                            }
-                            setSelectedLeft(newSet)
-                          }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {item.name}
-                          </p>
-                          {assignmentType === 'submerchant-acquirer' ? (
-                            'merchantId' in item && (
-                              <p className="text-xs text-muted-foreground truncate">
-                                {item.merchantId}
-                              </p>
-                            )
-                          ) : null}
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    Selected: {selectedLeft.size}
-                  </p>
-                </div>
-              </div>
-
-              {/* Center - Arrow & Summary */}
-              <div className="flex flex-col items-center justify-center gap-4">
-                <ArrowRight className="h-6 w-6 text-primary hidden lg:block" />
-                <div className="bg-background border rounded-lg p-4 w-full text-center">
-                  <p className="text-xs text-muted-foreground mb-2">Will assign:</p>
-                  <p className="text-lg font-bold text-foreground">
-                    {selectedLeft.size * selectedRight.size}
-                  </p>
-                  <p className="text-xs text-muted-foreground">relationship{selectedLeft.size * selectedRight.size !== 1 ? 's' : ''}</p>
-                </div>
-                <Button
-                  onClick={() => setShowConfirmation(true)}
-                  disabled={!isAnySelected}
-                  className="w-full"
-                >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Confirm
-                </Button>
-              </div>
-
-              {/* Right Panel - Acquirers/Projects */}
-              <div className="border rounded-lg p-4 bg-muted/50">
-                <div className="mb-4">
-                  <h3 className="font-semibold text-foreground mb-3">{rightLabel}s</h3>
-                  <Input
-                    placeholder={`Search ${rightLabel.toLowerCase()}...`}
-                    value={searchRight}
-                    onChange={(e) => setSearchRight(e.target.value)}
-                    className="mb-4"
-                  />
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {rightPanel.map((item) => (
-                      <label
-                        key={item.id}
-                        className="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-background transition-colors"
-                      >
-                        <Checkbox
-                          checked={selectedRight.has(item.id)}
-                          onCheckedChange={(checked) => {
-                            const newSet = new Set(selectedRight)
-                            if (checked) {
-                              newSet.add(item.id)
-                            } else {
-                              newSet.delete(item.id)
-                            }
-                            setSelectedRight(newSet)
-                          }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground truncate">
-                            {item.name}
-                          </p>
-                          {'code' in item && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {item.code}
-                            </p>
-                          )}
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    Selected: {selectedRight.size}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Confirmation Dialog */}
-        <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Assignment</DialogTitle>
-              <DialogDescription>
-                You are about to create {selectedLeft.size * selectedRight.size} relationship
-                {selectedLeft.size * selectedRight.size !== 1 ? 's' : ''}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm font-medium text-foreground mb-2">Summary:</p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>
-                    {leftLabel}s selected: <span className="font-semibold text-foreground">{selectedLeft.size}</span>
-                  </li>
-                  <li>
-                    {rightLabel}s selected: <span className="font-semibold text-foreground">{selectedRight.size}</span>
-                  </li>
-                  <li>
-                    Total relationships: <span className="font-semibold text-foreground">{selectedLeft.size * selectedRight.size}</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="flex items-start gap-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-yellow-800">
-                  This action will create new relationships. Existing ones will not be affected.
-                </p>
-              </div>
-            </div>
-
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setShowConfirmation(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleConfirm}>
-                Confirm Assignment
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </MainLayout>
   )
 }

@@ -52,7 +52,7 @@ export default function AcquirersPage() {
   const statuses = Array.from(new Set(acquirers.map(a => a.status)))
 
   return (
-    <MainLayout>
+    <div>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -180,6 +180,6 @@ export default function AcquirersPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </div>
   )
 }

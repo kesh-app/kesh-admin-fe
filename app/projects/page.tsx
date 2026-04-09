@@ -38,7 +38,7 @@ export default function ProjectsPage() {
   const statuses = Array.from(new Set(projects.map(p => p.status)))
 
   return (
-    <MainLayout>
+    <div>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -174,6 +174,6 @@ export default function ProjectsPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </div>
   )
 }

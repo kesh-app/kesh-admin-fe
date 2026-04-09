@@ -42,7 +42,7 @@ export default function UsersPage() {
   const statuses = Array.from(new Set(users.map(u => u.status)))
 
   return (
-    <MainLayout>
+    <div>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -186,6 +186,6 @@ export default function UsersPage() {
           </CardContent>
         </Card>
       </div>
-    </MainLayout>
+    </div>
   )
 }

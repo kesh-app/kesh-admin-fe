@@ -103,7 +103,7 @@ function RecentProjectsTable() {
 
 export default function DashboardPage() {
   return (
-    <MainLayout>
+    <div>
       <div className="space-y-6">
         {/* Header */}
         <div>
@@ -149,6 +149,6 @@ export default function DashboardPage() {
           <RecentProjectsTable />
         </div>
       </div>
-    </MainLayout>
+    </div>
   )
 }
