@@ -2,36 +2,49 @@ export type User = {
   id: string
   name: string
   email: string
-  role: string
   status: 'active' | 'inactive'
   createdAt: string
 }
 
+export type ProjectStatus = 'active' | 'inactive' | 'archived'
+
 export type Project = {
   id: string
   name: string
-  status: 'active' | 'inactive' | 'archived'
-  acquirers: number
-  submerchants: number
+  userId: string
+  status: ProjectStatus
   createdAt: string
 }
+
+export type AcquirerStatus = 'verified' | 'pending' | 'disabled'
 
 export type Acquirer = {
   id: string
   name: string
   code: string
-  status: 'verified' | 'pending' | 'disabled'
-  assignedSubmerchants: number
+  status: AcquirerStatus
   createdAt: string
 }
+
+export type SubmerchantStatus = 'verified' | 'pending' | 'disabled'
 
 export type Submerchant = {
   id: string
   name: string
   merchantId: string
-  status: 'verified' | 'pending' | 'disabled'
-  acquirers: string[]
+  status: SubmerchantStatus
+  acquirerCode: string | null
   createdAt: string
+}
+
+export type ProjectAssignmentItem = {
+  acquirerId: string
+  submerchantIds: string[]
+}
+
+export type ProjectAssignment = {
+  projectId: string
+  assignments: ProjectAssignmentItem[]
 }
 
 export const users: User[] = [
@@ -39,7 +52,6 @@ export const users: User[] = [
     id: '1',
     name: 'Ahmad Rizky',
     email: 'ahmad@kesh.co.id',
-    role: 'Admin',
     status: 'active',
     createdAt: '2024-01-15',
   },
@@ -47,7 +59,6 @@ export const users: User[] = [
     id: '2',
     name: 'Siti Nurhaliza',
     email: 'siti@kesh.co.id',
-    role: 'Manager',
     status: 'active',
     createdAt: '2024-02-20',
   },
@@ -55,7 +66,6 @@ export const users: User[] = [
     id: '3',
     name: 'Budi Santoso',
     email: 'budi@kesh.co.id',
-    role: 'Operator',
     status: 'active',
     createdAt: '2024-03-10',
   },
@@ -63,7 +73,6 @@ export const users: User[] = [
     id: '4',
     name: 'Dewi Wijaya',
     email: 'dewi@kesh.co.id',
-    role: 'Analyst',
     status: 'inactive',
     createdAt: '2024-01-05',
   },
@@ -71,7 +80,6 @@ export const users: User[] = [
     id: '5',
     name: 'Eka Putri',
     email: 'eka@kesh.co.id',
-    role: 'Admin',
     status: 'active',
     createdAt: '2024-02-01',
   },
@@ -81,42 +89,23 @@ export const projects: Project[] = [
   {
     id: 'prj-001',
     name: 'Integration Platform v2',
+    userId: '1',
     status: 'active',
-    acquirers: 5,
-    submerchants: 142,
     createdAt: '2024-01-10',
   },
   {
     id: 'prj-002',
     name: 'Payment Gateway Enhancement',
+    userId: '2',
     status: 'active',
-    acquirers: 3,
-    submerchants: 87,
     createdAt: '2024-02-15',
   },
   {
     id: 'prj-003',
     name: 'Risk Management System',
+    userId: '3',
     status: 'inactive',
-    acquirers: 2,
-    submerchants: 45,
     createdAt: '2023-11-20',
-  },
-  {
-    id: 'prj-004',
-    name: 'Settlement Automation',
-    status: 'active',
-    acquirers: 4,
-    submerchants: 156,
-    createdAt: '2024-01-05',
-  },
-  {
-    id: 'prj-005',
-    name: 'Legacy System Migration',
-    status: 'archived',
-    acquirers: 1,
-    submerchants: 23,
-    createdAt: '2023-09-01',
   },
 ]
 
@@ -126,7 +115,6 @@ export const acquirers: Acquirer[] = [
     name: 'Bank Central Asia',
     code: 'BCA',
     status: 'verified',
-    assignedSubmerchants: 234,
     createdAt: '2023-12-01',
   },
   {
@@ -134,7 +122,6 @@ export const acquirers: Acquirer[] = [
     name: 'Bank Mandiri',
     code: 'MANDIRI',
     status: 'verified',
-    assignedSubmerchants: 189,
     createdAt: '2023-12-05',
   },
   {
@@ -142,7 +129,6 @@ export const acquirers: Acquirer[] = [
     name: 'Bank Rakyat Indonesia',
     code: 'BRI',
     status: 'verified',
-    assignedSubmerchants: 156,
     createdAt: '2023-12-10',
   },
   {
@@ -150,24 +136,7 @@ export const acquirers: Acquirer[] = [
     name: 'Bank Negara Indonesia',
     code: 'BNI',
     status: 'pending',
-    assignedSubmerchants: 0,
     createdAt: '2024-02-01',
-  },
-  {
-    id: 'acq-005',
-    name: 'CIMB Niaga',
-    code: 'CIMB',
-    status: 'disabled',
-    assignedSubmerchants: 0,
-    createdAt: '2023-11-15',
-  },
-  {
-    id: 'acq-006',
-    name: 'Bank DBS Indonesia',
-    code: 'DBS',
-    status: 'verified',
-    assignedSubmerchants: 98,
-    createdAt: '2024-01-20',
   },
 ]
 
@@ -177,7 +146,7 @@ export const submerchants: Submerchant[] = [
     name: 'PT Toko Online Jaya',
     merchantId: 'TOKO-001',
     status: 'verified',
-    acquirers: ['BCA', 'MANDIRI'],
+    acquirerCode: 'BCA',
     createdAt: '2024-01-05',
   },
   {
@@ -185,7 +154,7 @@ export const submerchants: Submerchant[] = [
     name: 'CV Restoran Maju Jaya',
     merchantId: 'REST-001',
     status: 'verified',
-    acquirers: ['BCA', 'BRI'],
+    acquirerCode: 'BCA',
     createdAt: '2024-01-10',
   },
   {
@@ -193,7 +162,7 @@ export const submerchants: Submerchant[] = [
     name: 'PT Fashion Hub Indonesia',
     merchantId: 'FASH-001',
     status: 'verified',
-    acquirers: ['MANDIRI'],
+    acquirerCode: 'MANDIRI',
     createdAt: '2024-01-15',
   },
   {
@@ -201,7 +170,7 @@ export const submerchants: Submerchant[] = [
     name: 'Warung Kopi Digital',
     merchantId: 'KOPI-001',
     status: 'pending',
-    acquirers: [],
+    acquirerCode: 'BNI',
     createdAt: '2024-02-20',
   },
   {
@@ -209,7 +178,7 @@ export const submerchants: Submerchant[] = [
     name: 'Toko Elektronik Pasifik',
     merchantId: 'ELEC-001',
     status: 'verified',
-    acquirers: ['BCA', 'MANDIRI', 'BRI'],
+    acquirerCode: 'BRI',
     createdAt: '2024-01-20',
   },
   {
@@ -217,7 +186,45 @@ export const submerchants: Submerchant[] = [
     name: 'PT Logistik Express',
     merchantId: 'LOG-001',
     status: 'disabled',
-    acquirers: ['BCA'],
+    acquirerCode: 'BCA',
     createdAt: '2023-12-01',
+  },
+]
+
+export const projectAssignments: ProjectAssignment[] = [
+  {
+    projectId: 'prj-001',
+    assignments: [
+      {
+        acquirerId: 'acq-001',
+        submerchantIds: ['sub-001', 'sub-002'],
+      },
+      {
+        acquirerId: 'acq-002',
+        submerchantIds: ['sub-003'],
+      },
+    ],
+  },
+  {
+    projectId: 'prj-002',
+    assignments: [
+      {
+        acquirerId: 'acq-003',
+        submerchantIds: ['sub-005'],
+      },
+      {
+        acquirerId: 'acq-004',
+        submerchantIds: ['sub-004'],
+      },
+    ],
+  },
+  {
+    projectId: 'prj-003',
+    assignments: [
+      {
+        acquirerId: 'acq-001',
+        submerchantIds: ['sub-006'],
+      },
+    ],
   },
 ]

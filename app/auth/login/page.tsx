@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import Image from 'next/image'  
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,9 +34,12 @@ export default function LoginPage() {
     <Card className="border-0 shadow-lg">
       <CardHeader className="space-y-2">
         <div className="flex items-center justify-center mb-4">
-          <div className="w-12 h-12 bg-primary text-primary-foreground rounded-lg flex items-center justify-center font-bold text-xl">
-            K
-          </div>
+          <Image
+            src="https://res.cloudinary.com/doy2qixs5/image/upload/v1771388340/kesh/kesh-logo-square_cwtlqj.jpg"
+            alt="KESH Logo"
+            width={48}
+            height={48}
+            className="rounded-full"/>
         </div>
         <CardTitle className="text-2xl text-center">KESH Admin</CardTitle>
         <CardDescription className="text-center">Sign in to your account</CardDescription>

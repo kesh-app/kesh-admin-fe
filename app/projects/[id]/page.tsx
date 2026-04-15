@@ -64,6 +64,7 @@ export default function ProjectDetailPage() {
   }
 
   const projectUser = users.find((user) => user.id === project.userId)
+
   const projectAssignment = projectAssignments.find(
     (item) => item.projectId === project.id
   )
@@ -167,9 +168,7 @@ export default function ProjectDetailPage() {
       <Card>
         <CardHeader>
           <CardTitle>Project Information</CardTitle>
-          <CardDescription>
-            Main information for this project.
-          </CardDescription>
+          <CardDescription>Main information for this project.</CardDescription>
         </CardHeader>
 
         <CardContent className="grid gap-4 md:grid-cols-2">
