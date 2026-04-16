@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { MainLayout } from '@/components/main-layout'
 
@@ -22,8 +23,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning={true}>
+      <head>
+        <Script
+          id="hydration-fix"
+          src="/scripts/hydration-fix.js"
+          strategy="beforeInteractive"
+        />
+      </head>
+      <body className={inter.className} suppressHydrationWarning={true}>
         <MainLayout>{children}</MainLayout>
       </body>
     </html>
