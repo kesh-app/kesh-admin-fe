@@ -78,8 +78,8 @@ export default function UserFilters() {
               className="h-10 px-3 border border-input rounded-md bg-background text-sm"
             >
               <option value="">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
             </select>
           </div>
 
