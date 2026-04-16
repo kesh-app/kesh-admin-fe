@@ -1,7 +1,5 @@
-'use client'
-
 import Link from 'next/link'
-import { notFound, useParams } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft, Building2, FolderOpen, User2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -53,9 +51,12 @@ const submerchantStatusVariant = (status: string) => {
   }
 }
 
-export default function ProjectDetailPage() {
-  const params = useParams()
-  const projectId = params.id as string
+export default async function ProjectDetailPage({ params }: { params: Promise<{ id?: string }> }) {
+  const { id: projectId } = await params
+
+  if (!projectId) {
+    redirect('/projects')
+  }
 
   const project = projects.find((item) => item.id === projectId)
 

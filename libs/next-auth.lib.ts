@@ -73,27 +73,22 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const res = await apiServer.post("/auth/v1/login", {
+          const res = await apiServer.post("/v1/auth/login", {
             email: credentials.email,
             password: credentials.password,
           });
 
           const result = res.data;
 
-          if (res.status === 200 && result?.success) {
+          if ((res.status === 200 || res.status === 201) && result?.success) {
             // Return the user data and tokens
             return {
               id: result?.data?.id,
               name: result?.data?.name,
               email: result?.data?.email,
-              business_name: result?.data?.business_name,
-              phone: result?.data?.phone,
+              role: result?.data?.role,
               access_token: result?.data?.access_token,
               refresh_token: result?.data?.refresh_token,
-              balance: result?.data?.balance,
-              is_verified: result?.data?.is_verified,
-              avatar_url: result?.data?.avatar_url,
-              is_kyb_verified: result?.data?.is_kyb_verified,
             };
           }
 

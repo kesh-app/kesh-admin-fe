@@ -1,33 +1,46 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { getCsrfToken } from 'next-auth/react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Image from 'next/image'  
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [csrfToken, setCsrfToken] = useState<string | null>(null)
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    // Mock authentication - just validate basic input
-    if (email && password) {
-      // Set a mock session token in localStorage
-      localStorage.setItem('auth_token', 'mock-token-' + Date.now())
-      localStorage.setItem('user_email', email)
-      
-      // Redirect to dashboard
-      router.push('/')
+  // Handle errors from redirect
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) {
+      if (error === 'CredentialsSignin') {
+        toast.error('Gagal masuk. Mohon periksa kembali email dan password Anda.')
+      } else {
+        toast.error('Terjadi kesalahan saat masuk. Silakan coba lagi.')
+      }
+      // Clean up the URL
+      router.replace('/auth/login')
     }
 
-    setIsLoading(false)
+    // Fetch CSRF token for standard form submission
+    const fetchToken = async () => {
+      const token = await getCsrfToken()
+      setCsrfToken(token ?? null)
+    }
+    fetchToken()
+  }, [searchParams, router])
+
+  const handleSubmit = () => {
+    setIsLoading(true)
+    // The form action will take over from here
   }
 
   return (
@@ -42,13 +55,27 @@ export default function LoginPage() {
             className="rounded-full"/>
         </div>
         <CardTitle className="text-2xl text-center">KESH Admin</CardTitle>
-        <CardDescription className="text-center">Sign in to your account</CardDescription>
+        <CardDescription className="text-center">Silakan masuk ke akun Anda</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleLogin} className="space-y-4">
+        {/* 
+          Using a standard HTML form POST to /api/auth/signin/credentials 
+          to hide the request payload from the browser's Fetch/XHR network tab.
+          Note: NextAuth v4 expects the 'signin' endpoint for the initial POST.
+        */}
+        <form 
+          method="POST" 
+          action="/api/auth/signin/credentials" 
+          onSubmit={handleSubmit}
+          className="space-y-4"
+        >
+          <input type="hidden" name="csrfToken" value={csrfToken ?? ''} />
+          <input type="hidden" name="callbackUrl" value="/" />
+          
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Email</label>
             <Input
+              name="email"
               type="email"
               placeholder="admin@kesh.co.id"
               value={email}
@@ -60,6 +87,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Password</label>
             <Input
+              name="password"
               type="password"
               placeholder="••••••••"
               value={password}
@@ -70,14 +98,14 @@ export default function LoginPage() {
           </div>
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !csrfToken}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Sedang masuk...' : 'Masuk'}
           </Button>
         </form>
         <p className="text-xs text-muted-foreground text-center mt-4">
-          Demo credentials: Use any email and password to login
+          Gunakan email dan password admin Anda untuk masuk
         </p>
       </CardContent>
     </Card>
