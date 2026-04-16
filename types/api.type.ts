@@ -8,6 +8,15 @@ export type PaginationMeta = {
   hasPrev: boolean;
 }
 
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+  meta?: PaginationMeta;
+  timestamp?: string;
+  path?: string;
+}
+
 export interface ApiErrorResponse {
   success: boolean;
   message: string | string[];

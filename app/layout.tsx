@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
 import './globals.css'
 import { MainLayout } from '@/components/main-layout'
 import IndexProviders from '@/providers/Index.provider'
@@ -25,13 +24,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning={true}>
-      <head>
-        <Script
-          id="hydration-fix"
-          src="/scripts/hydration-fix.js"
-          strategy="beforeInteractive"
-        />
-      </head>
       <body className={inter.className} suppressHydrationWarning={true}>
         <IndexProviders>
           <MainLayout>{children}</MainLayout>

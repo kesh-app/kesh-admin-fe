@@ -1,218 +1,83 @@
-'use client'
-
-import { useState } from 'react'
-import { Search, MoreHorizontal, Plus } from 'lucide-react'
-
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { apiServer } from '@/libs/api-server.lib'
+import { UserListResponse } from '@/types/user.type'
 
-import { users } from '@/libs/mock-data'
+import UserFilters from '@/components/users/user-filters'
+import UserTable from '@/components/users/user-table'
+import UserPagination from '@/components/users/user-pagination'
 
-export default function UsersPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState<string | null>(null)
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+export default async function UsersPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const search = (params.search as string) || ''
+  const status = (params.status as string) || ''
+  const limit = Number(params.limit) || 10
 
-    const matchesStatus = !filterStatus || user.status === filterStatus
+  let usersData: UserListResponse | null = null
+  let error: string | null = null
 
-    return matchesSearch && matchesStatus
-  })
-
-  const statuses = Array.from(new Set(users.map(u => u.status)))
+  try {
+    const response = await apiServer.get<UserListResponse>('/v1/users', {
+      params: {
+        page,
+        search: search || undefined,
+        status: status || undefined,
+        limit,
+      },
+    })
+    usersData = response.data
+  } catch (e: any) {
+    console.error('Failed to fetch users:', e)
+    error = e.message || 'Failed to load users'
+  }
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Users</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage user accounts
-          </p>
+          <p className="text-muted-foreground mt-2">Manage user accounts</p>
         </div>
 
-        <Button>
+        {/* <Button>
           <Plus className="mr-2 h-4 w-4" />
           Add User
-        </Button>
+        </Button> */}
       </div>
 
       {/* Filters */}
+      <UserFilters />
+
+      {/* Table & Pagination */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end">
-
-            {/* Search */}
-            <div className="flex-1">
-              <label className="text-sm font-medium block mb-2">
-                Search
-              </label>
-
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="text-sm font-medium block mb-2">
-                Status
-              </label>
-
-              <select
-                value={filterStatus || ''}
-                onChange={(e) => setFilterStatus(e.target.value || null)}
-                className="h-10 px-3 border border-input rounded-md bg-background text-sm"
-              >
-                <option value="">All Status</option>
-                {statuses.map(status => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Clear */}
-            {(searchTerm || filterStatus) && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm('')
-                  setFilterStatus(null)
-                }}
-              >
-                Clear
-              </Button>
-            )}
-
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+          <div>
+            <CardTitle>User Directory</CardTitle>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>User Directory</CardTitle>
-          <CardDescription>
-            Showing {filteredUsers.length} of {users.length} users
-          </CardDescription>
         </CardHeader>
 
         <CardContent>
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-
-              <TableBody>
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">
-                        {user.name}
-                      </TableCell>
-
-                      <TableCell className="text-muted-foreground">
-                        {user.email}
-                      </TableCell>
-
-                      <TableCell>
-                        <Badge
-                          variant={
-                            user.status === 'active'
-                              ? 'success'
-                              : 'secondary'
-                          }
-                        >
-                          {user.status}
-                        </Badge>
-                      </TableCell>
-
-                      <TableCell className="text-muted-foreground">
-                        {user.createdAt}
-                      </TableCell>
-
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem>
-                              View Details
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem>
-                              Edit
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem className="text-destructive">
-                              Remove User
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-muted-foreground py-8"
-                    >
-                      No users found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-
-            </Table>
-          </div>
+          {error ? (
+            <div className="bg-destructive/10 text-destructive p-4 rounded-md text-sm">
+              {error}
+            </div>
+          ) : usersData ? (
+            <>
+              <UserTable users={usersData.data} />
+              {usersData.meta && <UserPagination meta={usersData.meta} />}
+            </>
+          ) : (
+            <div className="flex items-center justify-center p-8">
+              Loading users...
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
