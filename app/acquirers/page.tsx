@@ -1,55 +1,39 @@
-'use client'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { apiServer } from '@/libs/api-server.lib'
+import { AcquirerListResponse } from '@/types/acquirer.type'
 
-import { useState } from 'react'
-import { Search, MoreHorizontal, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { acquirers, submerchants } from '@/libs/mock-data'
+import AcquirerFilters from '@/components/acquirers/acquirer-filters'
+import AcquirerTable from '@/components/acquirers/acquirer-table'
+import AcquirerPagination from '@/components/acquirers/acquirer-pagination'
 
-const statusBadgeVariant = (status: string) => {
-  switch (status) {
-    case 'verified':
-      return 'success'
-    case 'pending':
-      return 'warning'
-    case 'disabled':
-      return 'destructive'
-    default:
-      return 'secondary'
-  }
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default function AcquirersPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState<string | null>(null)
+export default async function AcquirersPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const page = Number(params.page) || 1
+  const search = (params.search as string) || ''
+  const status = (params.status as string) || ''
+  const limit = Number(params.limit) || 10
 
-  const filteredAcquirers = acquirers.filter((acquirer) => {
-    const matchesSearch =
-      acquirer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      acquirer.code.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = !filterStatus || acquirer.status === filterStatus
-    return matchesSearch && matchesStatus
-  })
+  let acquirersData: AcquirerListResponse | null = null
+  let error: string | null = null
 
-  const statuses = Array.from(new Set(acquirers.map((a) => a.status)))
+  try {
+    const response = await apiServer.get<AcquirerListResponse>('/v1/acquirers', {
+      params: {
+        page,
+        search: search || undefined,
+        status: status || undefined,
+        limit,
+      },
+    })
+    acquirersData = response.data
+  } catch (e: any) {
+    console.error('Failed to fetch acquirers:', e)
+    error = e.message || 'Failed to load acquirers'
+  }
 
   return (
     <div className="space-y-6">
@@ -60,133 +44,33 @@ export default function AcquirersPage() {
             Manage payment acquirer integrations
           </p>
         </div>
-        <Button>
+        {/* <Button>
           <Plus className="mr-2 h-4 w-4" />
           Add Acquirer
-        </Button>
+        </Button> */}
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end">
-            <div className="flex-1">
-              <label className="mb-2 block text-sm font-medium text-foreground">Search</label>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name or code..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
-
-            <div className="w-full md:w-48">
-              <label className="mb-2 block text-sm font-medium text-foreground">Status</label>
-              <select
-                value={filterStatus || ''}
-                onChange={(e) => setFilterStatus(e.target.value || null)}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
-              >
-                <option value="">All Status</option>
-                {statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {(searchTerm || filterStatus) && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm('')
-                  setFilterStatus(null)
-                }}
-              >
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <AcquirerFilters />
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
           <CardTitle>Bank Acquirers</CardTitle>
-          <CardDescription>
-            Showing {filteredAcquirers.length} of {acquirers.length} acquirers
-          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-hidden rounded-lg border bg-background">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Assigned Submerchants</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAcquirers.length > 0 ? (
-                  filteredAcquirers.map((acquirer) => {
-                    const assignedCount = submerchants.filter(
-                      (submerchant) => submerchant.acquirerCode === acquirer.code
-                    ).length
-
-                    return (
-                      <TableRow key={acquirer.id}>
-                        <TableCell className="font-medium">{acquirer.name}</TableCell>
-                        <TableCell className="font-mono text-muted-foreground">
-                          {acquirer.code}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={statusBadgeVariant(acquirer.status)}>
-                            {acquirer.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{assignedCount}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {acquirer.createdAt}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem>View Details</DropdownMenuItem>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive">
-                                Disable
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">
-                      No acquirers found
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          {error ? (
+            <div className="bg-destructive/10 text-destructive p-4 rounded-md text-sm">
+              {error}
+            </div>
+          ) : acquirersData ? (
+            <>
+              <AcquirerTable acquirers={acquirersData.data} />
+              {acquirersData.meta && <AcquirerPagination meta={acquirersData.meta} />}
+            </>
+          ) : (
+            <div className="flex items-center justify-center p-8">
+              <p className="text-muted-foreground">Loading acquirers...</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
