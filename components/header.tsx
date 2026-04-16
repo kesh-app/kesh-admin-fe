@@ -1,8 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Bell, LogOut, Search, Settings } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { Bell, LogOut, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -30,7 +29,7 @@ export function Header() {
           <p className="text-xs text-muted-foreground">Manage projects, acquirers, and submerchants</p>
         </div>
 
-        <div className="flex flex-1 justify-center md:justify-end">
+        {/* <div className="flex flex-1 justify-center md:justify-end">
           <div className="w-full max-w-md">
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -41,7 +40,7 @@ export function Header() {
               />
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon">
