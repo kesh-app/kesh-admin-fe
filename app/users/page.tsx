@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-import { users } from '@/lib/mock-data'
+import { users } from '@/libs/mock-data'
 
 export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('')

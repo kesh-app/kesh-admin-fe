@@ -19,8 +19,8 @@ import {
   projects,
   submerchants,
   users,
-} from '@/lib/mock-data'
-import type { Acquirer, Submerchant } from '@/lib/mock-data'
+} from '@/libs/mock-data'
+import type { Acquirer, Submerchant } from '@/libs/mock-data'
 
 type AssignmentGroup = {
   acquirer: Acquirer | undefined

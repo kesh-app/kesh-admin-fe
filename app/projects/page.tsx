@@ -45,7 +45,7 @@ import {
   submerchants,
   projectAssignments,
   ProjectAssignmentItem,
-} from "@/lib/mock-data";
+} from "@/libs/mock-data";
 
 type AssignmentRow = {
   id: string;

@@ -22,7 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { acquirers, submerchants } from '@/lib/mock-data'
+import { acquirers, submerchants } from '@/libs/mock-data'
 
 const statusBadgeVariant = (status: string) => {
   switch (status) {
