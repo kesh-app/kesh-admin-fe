@@ -54,7 +54,7 @@ export default function UserTable({ users }: UserTableProps) {
             users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="font-medium">
-                  {user.business_name}
+                  {user.business_name ?? "-"}
                 </TableCell>
 
                 <TableCell className="text-muted-foreground">

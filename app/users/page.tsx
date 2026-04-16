@@ -1,6 +1,4 @@
-import { Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { apiServer } from '@/libs/api-server.lib'
 import { UserListResponse } from '@/types/user.type'
 
@@ -52,10 +50,8 @@ export default async function UsersPage({ searchParams }: PageProps) {
         </Button> */}
       </div>
 
-      {/* Filters */}
       <UserFilters />
 
-      {/* Table & Pagination */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
           <div>
