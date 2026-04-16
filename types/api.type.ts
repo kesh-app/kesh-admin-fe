@@ -7,3 +7,13 @@ export type PaginationMeta = {
   hasNext: boolean;
   hasPrev: boolean;
 }
+
+export interface ApiErrorResponse {
+  success: boolean;
+  message: string | string[];
+  error?: string;
+  statusCode?: number;
+  timestamp?: string;
+  path?: string;
+  data?: any;
+}
