@@ -17,11 +17,11 @@ import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Users", href: "/users", icon: Users },
-  { name: "Projects", href: "/projects", icon: Briefcase },
-  { name: "Acquirers", href: "/acquirers", icon: Building2 },
-  { name: "Submerchants", href: "/submerchants", icon: ShoppingCart },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Users", href: "/dashboard/users", icon: Users },
+  { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
+  { name: "Acquirers", href: "/dashboard/acquirers", icon: Building2 },
+  { name: "Submerchants", href: "/dashboard/submerchants", icon: ShoppingCart },
 ];
 
 export function Sidebar() {

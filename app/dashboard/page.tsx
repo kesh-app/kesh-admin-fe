@@ -55,7 +55,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const { id: projectId } = await params
 
   if (!projectId) {
-    redirect('/projects')
+    redirect('/dashboard/projects')
   }
 
   const project = projects.find((item) => item.id === projectId)
@@ -95,7 +95,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <Link href="/projects">
+          <Link href="/dashboard/projects">
             <Button variant="ghost" className="-ml-3 mb-2">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Projects

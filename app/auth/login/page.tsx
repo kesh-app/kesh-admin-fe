@@ -70,7 +70,7 @@ export default function LoginPage() {
           className="space-y-4"
         >
           <input type="hidden" name="csrfToken" value={csrfToken ?? ''} />
-          <input type="hidden" name="callbackUrl" value="/" />
+          <input type="hidden" name="callbackUrl" value="/dashboard" />
           
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Email</label>

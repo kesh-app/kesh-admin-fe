@@ -11,8 +11,8 @@ export default function ProjectNotFound() {
         </p>
       </div>
 
-      <Link href="/projects">
-        <Button>Back to Projects</Button>
+      <Link href="/dashboard/projects">
+        <Button variant="outline" className="mt-4">Back to Projects</Button>
       </Link>
     </div>
   )

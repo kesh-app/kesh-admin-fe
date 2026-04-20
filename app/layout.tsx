@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { MainLayout } from '@/components/main-layout'
 import IndexProviders from '@/providers/Index.provider'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -26,7 +25,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning={true}>
       <body className={inter.className} suppressHydrationWarning={true}>
         <IndexProviders>
-          <MainLayout>{children}</MainLayout>
+          {children}
         </IndexProviders>
       </body>
     </html>

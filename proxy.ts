@@ -13,13 +13,13 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isAuthPage = pathname.startsWith("/auth");
-  // The dashboard is at the root "/" and other sub-pages
-  const isProtectedPage = !isAuthPage && !pathname.startsWith("/api") && !pathname.startsWith("/_next");
+  // The dashboard is at /dashboard
+  const isProtectedPage = pathname.startsWith("/dashboard") || pathname === "/";
   const hasError = token?.error === "RefreshAccessTokenError";
 
-  // 1. If accessing auth pages but already logged in, redirect to dashboard (projects)
+  // 1. If accessing auth pages but already logged in, redirect to dashboard
   if (token && !hasError && isAuthPage) {
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   // 2. If accessing protected pages but NOT logged in (or session error), redirect to login
@@ -35,18 +35,19 @@ export async function proxy(req: NextRequest) {
     
     return response;
   }
+  
+  // 3. Redirect root to dashboard (if logged in, otherwise it's caught by #2)
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
 
   return NextResponse.next();
 }
 
 export const config = {
-  // Update matcher to protect the root and other directories
   matcher: [
     "/",
-    "/projects/:path*",
-    "/users/:path*",
-    "/acquirers/:path*",
-    "/submerchants/:path*",
+    "/dashboard/:path*",
     "/auth/:path*",
   ],
 };

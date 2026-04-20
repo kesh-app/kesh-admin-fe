@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { notFound, useParams } from 'next/navigation'
+import { notFound, redirect, useParams } from 'next/navigation'
 import { ArrowLeft, Building2, FolderOpen, User2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -59,6 +59,10 @@ export default function ProjectDetailPage() {
 
   const project = projects.find((item) => item.id === projectId)
 
+  if (!projectId) {
+    redirect('/dashboard/projects')
+  }
+
   if (!project) {
     notFound()
   }
@@ -95,7 +99,7 @@ export default function ProjectDetailPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <Link href="/projects">
+          <Link href="/dashboard/projects">
             <Button variant="ghost" className="-ml-3 mb-2">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Projects
