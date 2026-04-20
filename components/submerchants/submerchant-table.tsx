@@ -75,6 +75,7 @@ export default function SubmerchantTable({ submerchants }: SubmerchantTableProps
         <TableHeader>
           <TableRow>
             <TableHead>Sub-Merchant Name</TableHead>
+            <TableHead>User Name</TableHead>
             <TableHead>Sub-Merchant ID</TableHead>
             <TableHead>Store ID</TableHead>
             <TableHead>Status</TableHead>
@@ -89,14 +90,18 @@ export default function SubmerchantTable({ submerchants }: SubmerchantTableProps
             submerchants.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="font-medium">
-                  {item.sub_merchant_name}
+                  {item?.sub_merchant_name}
+                </TableCell>
+
+                <TableCell className="font-medium">
+                  {item?.user?.name ?? "-"}
                 </TableCell>
 
                 <TableCell className="font-mono text-sm">
                   <div className="flex items-center gap-2">
                     <span>
                       {visibleIds[item.id] 
-                        ? item.sub_merchant_id 
+                        ? item?.sub_merchant_id 
                         : '•'.repeat(item.sub_merchant_id?.length || 10)}
                     </span>
                     <button 
@@ -113,23 +118,23 @@ export default function SubmerchantTable({ submerchants }: SubmerchantTableProps
                 </TableCell>
 
                 <TableCell className="text-muted-foreground">
-                  {item.store_id}
+                  {item?.store_id}
                 </TableCell>
 
                 <TableCell>
-                  <Badge variant={item.is_status ? 'success' : 'secondary'}>
-                    {item.is_status ? 'Active' : 'Inactive'}
+                  <Badge variant={item?.is_status ? 'success' : 'secondary'}>
+                    {item?.is_status ? 'Active' : 'Inactive'}
                   </Badge>
                 </TableCell>
 
                 <TableCell>
                   <Badge variant="outline">
-                    {item.acquirer?.name || 'N/A'}
+                    {item?.acquirer?.name || 'N/A'}
                   </Badge>
                 </TableCell>
 
                 <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {item.created_at ? format(new Date(item.created_at), 'dd MMM yyyy') : '-'}
+                  {item?.created_at ? format(new Date(item.created_at), 'dd MMM yyyy') : '-'}
                 </TableCell>
 
                 <TableCell className="text-right">
@@ -152,10 +157,10 @@ export default function SubmerchantTable({ submerchants }: SubmerchantTableProps
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
-                          className={item.is_status ? "text-destructive" : "text-success"}
-                          onClick={() => handleToggleStatus(item.id, item.is_status)}
+                          className={item?.is_status ? "text-destructive" : "text-success"}
+                          onClick={() => handleToggleStatus(item?.id, item?.is_status)}
                         >
-                          {item.is_status ? 'Disable' : 'Enable'}
+                          {item?.is_status ? 'Disable' : 'Enable'}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
