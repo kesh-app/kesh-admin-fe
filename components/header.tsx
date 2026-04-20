@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { signOut } from 'next-auth/react'
 import { Bell, LogOut, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,12 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export function Header() {
-  const router = useRouter()
-
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('user_email')
-    router.push('/auth/login')
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/auth/login' })
   }
 
   return (

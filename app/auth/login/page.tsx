@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getCsrfToken } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [csrfToken, setCsrfToken] = useState<string | null>(null)
 
   // Handle errors from redirect
   useEffect(() => {
@@ -29,18 +28,31 @@ export default function LoginPage() {
       // Clean up the URL
       router.replace('/auth/login')
     }
-
-    // Fetch CSRF token for standard form submission
-    const fetchToken = async () => {
-      const token = await getCsrfToken()
-      setCsrfToken(token ?? null)
-    }
-    fetchToken()
   }, [searchParams, router])
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setIsLoading(true)
-    // The form action will take over from here
+    
+    try {
+      const res = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (res?.error) {
+        toast.error('Gagal masuk. Mohon periksa kembali email dan password Anda.')
+      } else if (res?.ok) {
+        toast.success('Berhasil masuk!')
+        router.push('/dashboard')
+        router.refresh()
+      }
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat masuk. Silakan coba lagi.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -58,20 +70,10 @@ export default function LoginPage() {
         <CardDescription className="text-center">Silakan masuk ke akun Anda</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* 
-          Using a standard HTML form POST to /api/auth/signin/credentials 
-          to hide the request payload from the browser's Fetch/XHR network tab.
-          Note: NextAuth v4 expects the 'signin' endpoint for the initial POST.
-        */}
         <form 
-          method="POST" 
-          action="/api/auth/signin/credentials" 
           onSubmit={handleSubmit}
           className="space-y-4"
         >
-          <input type="hidden" name="csrfToken" value={csrfToken ?? ''} />
-          <input type="hidden" name="callbackUrl" value="/dashboard" />
-          
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Email</label>
             <Input
@@ -98,7 +100,7 @@ export default function LoginPage() {
           </div>
           <Button
             type="submit"
-            disabled={isLoading || !csrfToken}
+            disabled={isLoading || !email || !password}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {isLoading ? 'Sedang masuk...' : 'Masuk'}
