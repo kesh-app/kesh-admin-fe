@@ -89,9 +89,9 @@ const getApiServer = (): AxiosInstance => {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
 
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
-      if (config.data) console.log(`[API Request Data]`, config.data);
-      if (config.params) console.log(`[API Request Params]`, config.params);
+      // console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+      // if (config.data) console.log(`[API Request Data]`, config.data);
+      // if (config.params) console.log(`[API Request Params]`, config.params);
 
       return config;
     },
@@ -104,8 +104,8 @@ const getApiServer = (): AxiosInstance => {
   // Response Interceptor: 401 Rotation & Retry
   _apiServer.interceptors.response.use(
     (response) => {
-      console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.baseURL}${response.config.url} - Status: ${response.status}`);
-      console.log(`[API Response Data]`, response.data);
+      // console.log(`[API Response] ${response.config.method?.toUpperCase()} ${response.config.baseURL}${response.config.url} - Status: ${response.status}`);
+      // console.log(`[API Response Data]`, response.data);
       return response;
     },
     async (error: AxiosError) => {

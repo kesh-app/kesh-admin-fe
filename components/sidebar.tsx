@@ -12,6 +12,7 @@ import {
   Briefcase,
   Building2,
   ShoppingCart,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const navigation = [
   { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
   { name: "Acquirers", href: "/dashboard/acquirers", icon: Building2 },
   { name: "Submerchants", href: "/dashboard/submerchants", icon: ShoppingCart },
+  { name: "KYB Management", href: "/dashboard/kyb", icon: ShieldCheck },
 ];
 
 export function Sidebar() {
