@@ -55,7 +55,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const { id: projectId } = await params
 
   if (!projectId) {
-    redirect('/dashboard/projects')
+    redirect('/dashboard/transactions')
   }
 
   const project = projects.find((item) => item.id === projectId)

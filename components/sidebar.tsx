@@ -9,21 +9,21 @@ import {
   X,
   LayoutDashboard,
   Users,
-  Briefcase,
   Building2,
   ShoppingCart,
   ShieldCheck,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Transactions", href: "/dashboard/transactions", icon: CreditCard },
   { name: "Users", href: "/dashboard/users", icon: Users },
-  { name: "Projects", href: "/dashboard/projects", icon: Briefcase },
+  { name: "KYB Management", href: "/dashboard/kyb", icon: ShieldCheck },
   { name: "Acquirers", href: "/dashboard/acquirers", icon: Building2 },
   { name: "Submerchants", href: "/dashboard/submerchants", icon: ShoppingCart },
-  { name: "KYB Management", href: "/dashboard/kyb", icon: ShieldCheck },
 ];
 
 export function Sidebar() {
