@@ -16,7 +16,8 @@ import { useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/libs/api-client.lib'
 import { AcquirerListResponse } from '@/types/acquirer.type'
 import { AssignSubMerchantRequest } from '@/types/sub-merchant.type'
-import { Search, Check, ChevronsUpDown, Store, User as UserIcon, Building2, Tag } from 'lucide-react'
+import { SubMerchant } from '@/types/user.type'
+import { Search, Check, ChevronsUpDown, Store, User as UserIcon, Building2, Tag, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/libs/utils'
 import { toast } from 'sonner'
 
@@ -26,6 +27,8 @@ interface AssignSubMerchantModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess?: () => void
+  initialData?: SubMerchant | null
+  initialAcquirerName?: string
 }
 
 export default function AssignSubMerchantModal({ 
@@ -33,7 +36,9 @@ export default function AssignSubMerchantModal({
   userName,
   isOpen, 
   onClose,
-  onSuccess 
+  onSuccess,
+  initialData,
+  initialAcquirerName,
 }: AssignSubMerchantModalProps) {
   const [formData, setFormData] = useState<Partial<AssignSubMerchantRequest>>({
     user_id: userId,
@@ -50,20 +55,24 @@ export default function AssignSubMerchantModal({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [selectedAcquirerName, setSelectedAcquirerName] = useState('')
 
+  // Visibility toggles
+  const [showSubMerchantId, setShowSubMerchantId] = useState(false)
+  const [showStoreId, setShowStoreId] = useState(false)
+
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setFormData({
         user_id: userId,
-        sub_merchant_id: '',
-        store_id: '',
-        sub_merchant_name: '',
-        acquirer_id: '',
+        sub_merchant_id: initialData?.sub_merchant_id || '',
+        store_id: initialData?.store_id || '',
+        sub_merchant_name: initialData?.sub_merchant_name || '',
+        acquirer_id: initialData?.acquirer_id || '',
       })
-      setSelectedAcquirerName('')
+      setSelectedAcquirerName(initialAcquirerName || '')
       setAcquirerSearch('')
     }
-  }, [isOpen, userId])
+  }, [isOpen, userId, initialData, initialAcquirerName])
 
   // Debounce search
   useEffect(() => {
@@ -155,14 +164,25 @@ export default function AssignSubMerchantModal({
                 <label htmlFor="sub_merchant_id" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                   <Tag className="h-3 w-3" /> Sub-Merchant ID
                 </label>
-                <Input
-                  id="sub_merchant_id"
-                  placeholder="e.g. SUB-123"
-                  value={formData.sub_merchant_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, sub_merchant_id: e.target.value }))}
-                  className="bg-background border-border focus:ring-primary/20"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="sub_merchant_id"
+                    type={showSubMerchantId ? 'text' : 'password'}
+                    placeholder="e.g. SUB-123"
+                    value={formData.sub_merchant_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, sub_merchant_id: e.target.value }))}
+                    className="bg-background border-border focus:ring-primary/20 pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSubMerchantId(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showSubMerchantId ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               {/* Store ID */}
@@ -170,14 +190,25 @@ export default function AssignSubMerchantModal({
                 <label htmlFor="store_id" className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                   <Store className="h-3 w-3" /> Store ID
                 </label>
-                <Input
-                  id="store_id"
-                  placeholder="e.g. STORE-123"
-                  value={formData.store_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, store_id: e.target.value }))}
-                  className="bg-background border-border focus:ring-primary/20"
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="store_id"
+                    type={showStoreId ? 'text' : 'password'}
+                    placeholder="e.g. STORE-123"
+                    value={formData.store_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, store_id: e.target.value }))}
+                    className="bg-background border-border focus:ring-primary/20 pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowStoreId(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showStoreId ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             </div>
 

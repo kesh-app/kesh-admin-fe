@@ -27,9 +27,10 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         onSuccess={() => {
-          // You might want to refresh data here
           window.location.reload()
         }}
+        initialData={user.sub_merchant}
+        initialAcquirerName={user.project_secret?.acquirer?.name}
       />
       {/* Left Column: Profile Overview */}
       <div className="lg:col-span-1 space-y-6">
@@ -58,7 +59,7 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
                 >
                   <Store className="mr-2 h-4 w-4" />
-                  Assign Sub-Merchant
+                  {user.sub_merchant ? 'Sub-Merchant' : 'Assign Sub-Merchant'}
                 </Button>
               </div>
 

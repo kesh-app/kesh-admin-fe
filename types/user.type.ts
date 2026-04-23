@@ -54,6 +54,18 @@ export interface ProjectSecret {
   acquirer: Acquirer;
 }
 
+export interface SubMerchant {
+  id: string;
+  sub_merchant_id: string;
+  sub_merchant_name: string;
+  is_status: boolean;
+  store_id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  acquirer_id: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -70,6 +82,7 @@ export interface User {
   updated_at: string;
   kyb?: KYB | null;
   project_secret?: ProjectSecret | null;
+  sub_merchant?: SubMerchant | null;
 }
 
 export type UserListResponse = ApiResponse<User[]>;
