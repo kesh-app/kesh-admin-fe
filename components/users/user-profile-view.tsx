@@ -1,3 +1,5 @@
+"use client";
+
 import { User as UserIcon, Mail, Phone, Calendar, ShieldAlert } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -5,14 +7,30 @@ import { User } from '@/types/user.type'
 import { format } from 'date-fns'
 import KYBInfoCard from './kyb-info-card'
 import ProjectSecretCard from './project-secret-card'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Store } from 'lucide-react'
+import AssignSubMerchantModal from './assign-sub-merchant-modal'
 
 interface UserProfileViewProps {
   user: User
 }
 
 export default function UserProfileView({ user }: UserProfileViewProps) {
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-10">
+      <AssignSubMerchantModal
+        userId={user.id}
+        userName={user.name || user.business_name || 'Anonymous'}
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+        onSuccess={() => {
+          // You might want to refresh data here
+          window.location.reload()
+        }}
+      />
       {/* Left Column: Profile Overview */}
       <div className="lg:col-span-1 space-y-6">
         <Card className="overflow-hidden border-none shadow-xl bg-linear-to-br from-card to-card/50">
@@ -32,6 +50,16 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
                 <p className="text-muted-foreground font-mono text-xs flex items-center gap-1 mt-1">
                   ID: {user.id}
                 </p>
+              </div>
+
+              <div className="pt-2">
+                <Button 
+                  onClick={() => setIsAssignModalOpen(true)}
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                >
+                  <Store className="mr-2 h-4 w-4" />
+                  Assign Sub-Merchant
+                </Button>
               </div>
 
               <div className="flex flex-wrap gap-2 pt-1 border-t border-b py-4">

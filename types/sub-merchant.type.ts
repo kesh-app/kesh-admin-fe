@@ -22,3 +22,11 @@ export interface SubMerchant {
 
 export type SubMerchantListResponse = ApiResponse<SubMerchant[]>;
 export type SubMerchantDetailResponse = ApiResponse<SubMerchant>;
+
+export interface AssignSubMerchantRequest {
+  user_id: string;
+  sub_merchant_id: string;
+  store_id: string;
+  sub_merchant_name: string;
+  acquirer_id: string;
+}
