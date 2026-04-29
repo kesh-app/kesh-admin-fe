@@ -32,7 +32,7 @@ const projectStatusVariant = (status: string) => {
     case 'inactive':
       return 'secondary'
     case 'archived':
-      return 'outline-solid'
+      return 'outline'
     default:
       return 'secondary'
   }

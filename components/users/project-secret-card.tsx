@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Eye, EyeOff, Key, Shield, Globe, Terminal } from 'lucide-react'
+import { Eye, EyeOff, Shield, Globe, Terminal } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ProjectSecret } from '@/types/user.type'

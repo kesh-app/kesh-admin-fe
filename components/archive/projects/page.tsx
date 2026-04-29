@@ -304,7 +304,7 @@ export default function ProjectsPage() {
                               ? "success"
                               : project.status === "inactive"
                                 ? "secondary"
-                                : "outline-solid"
+                                : "outline"
                           }
                         >
                           {project.status}

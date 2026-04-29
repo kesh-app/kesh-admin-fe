@@ -1,4 +1,3 @@
-import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { apiServer } from '@/libs/api-server.lib'
 import { KYBListResponse } from '@/types/kyb.type'

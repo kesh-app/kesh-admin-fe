@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { toast } from 'sonner'
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Image from 'next/image'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isLoading, setIsLoading] = useState(false)
@@ -19,12 +19,14 @@ export default function LoginPage() {
   // Handle errors from redirect
   useEffect(() => {
     const error = searchParams.get('error')
+
     if (error) {
       if (error === 'CredentialsSignin') {
         toast.error('Gagal masuk. Mohon periksa kembali email dan password Anda.')
       } else {
         toast.error('Terjadi kesalahan saat masuk. Silakan coba lagi.')
       }
+
       // Clean up the URL
       router.replace('/auth/login')
     }
@@ -33,7 +35,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
+
     try {
       const res = await signIn('credentials', {
         email,
@@ -64,16 +66,17 @@ export default function LoginPage() {
             alt="KESH Logo"
             width={48}
             height={48}
-            className="rounded-full"/>
+            className="rounded-full"
+          />
         </div>
         <CardTitle className="text-2xl text-center">KESH Admin</CardTitle>
-        <CardDescription className="text-center">Silakan masuk ke akun Anda</CardDescription>
+        <CardDescription className="text-center">
+          Silakan masuk ke akun Anda
+        </CardDescription>
       </CardHeader>
+
       <CardContent>
-        <form 
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Email</label>
             <Input
@@ -86,6 +89,7 @@ export default function LoginPage() {
               className="border-border"
             />
           </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Password</label>
             <Input
@@ -98,6 +102,7 @@ export default function LoginPage() {
               className="border-border"
             />
           </div>
+
           <Button
             type="submit"
             disabled={isLoading || !email || !password}
@@ -106,10 +111,19 @@ export default function LoginPage() {
             {isLoading ? 'Sedang masuk...' : 'Masuk'}
           </Button>
         </form>
+
         <p className="text-xs text-muted-foreground text-center mt-4">
           Gunakan email dan password admin Anda untuk masuk
         </p>
       </CardContent>
     </Card>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
   )
 }
