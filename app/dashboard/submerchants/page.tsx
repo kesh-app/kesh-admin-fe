@@ -5,6 +5,7 @@ import { SubMerchantListResponse } from '@/types/sub-merchant.type'
 import SubmerchantFilters from '@/components/submerchants/submerchant-filters'
 import SubmerchantTable from '@/components/submerchants/submerchant-table'
 import SubmerchantPagination from '@/components/submerchants/submerchant-pagination'
+import SubmerchantHeader from '@/components/submerchants/submerchant-header'
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -37,14 +38,8 @@ export default async function SubmerchantsPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Sub-Merchants</h1>
-          <p className="mt-1 text-muted-foreground">
-            Manage merchant accounts and their acquirer relationship
-          </p>
-        </div>
-      </div>
+      <SubmerchantHeader />
+
 
       <SubmerchantFilters />
 
