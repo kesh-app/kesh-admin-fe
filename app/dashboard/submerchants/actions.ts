@@ -24,3 +24,15 @@ export async function updateSubMerchant(id: string, data: any) {
     return { success: false, message: error.message || 'Failed to update sub-merchant' }
   }
 }
+
+export async function bulkAssignSubMerchants(data: any[]) {
+  try {
+    await apiServer.post('/v1/sub-merchants/bulk-assign', { data })
+    revalidatePath('/dashboard/submerchants')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed bulk sub-merchant assignment:', error)
+    return { success: false, message: error.message || 'Failed bulk assignment' }
+  }
+}
+
