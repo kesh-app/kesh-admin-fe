@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { FileUp, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { bulkAssignSubMerchants } from '@/app/dashboard/submerchants/actions'
 
 interface BulkAssignModalProps {
   isOpen: boolean
@@ -100,15 +101,26 @@ export default function BulkAssignModal({ isOpen, onClose }: BulkAssignModalProp
     }
   }
 
-  const handleConfirm = () => {
-    // This is where the data would be sent to the API
-    console.log('Final JSON Array to send:', data)
-    toast.success('Data confirmed', {
-      description: 'Ready to be sent to API.'
-    })
-    // For now, we just close the modal
-    // onClose()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleConfirm = async () => {
+    setIsSubmitting(true)
+    const result = await bulkAssignSubMerchants(data)
+    setIsSubmitting(false)
+
+    if (result.success) {
+      toast.success('Successfully assigned sub-merchants', {
+        description: `${data.length} records processed.`
+      })
+      onClose()
+      setData([])
+    } else {
+      toast.error('Failed to assign sub-merchants', {
+        description: result.message
+      })
+    }
   }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -209,9 +221,10 @@ export default function BulkAssignModal({ isOpen, onClose }: BulkAssignModalProp
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={data.length === 0 || !!error}>
-            Confirm & Assign
+          <Button onClick={handleConfirm} disabled={data.length === 0 || !!error || isSubmitting}>
+            {isSubmitting ? 'Assigning...' : 'Confirm & Assign'}
           </Button>
+
         </DialogFooter>
       </DialogContent>
     </Dialog>
