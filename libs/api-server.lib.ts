@@ -4,28 +4,46 @@ import { getToken } from "next-auth/jwt";
 import { headers, cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-const isRedirectError = (error: unknown): error is { digest: string } => {
+export const isRedirectError = (error: unknown): error is { digest: string } => {
   return !!error && typeof error === 'object' && 'digest' in error && typeof (error as { digest: unknown }).digest === 'string' && (error as { digest: string }).digest.startsWith('NEXT_REDIRECT');
 };
 
+
 const clearAuthCookies = async () => {
-  const cookieStore = await cookies();
-  const cookiesToClear = [
-    "next-auth.session-token",
-    "__Secure-next-auth.session-token",
-    "next-auth.csrf-token",
-    "next-auth.callback-url",
-    "next-auth.state",
-    "next-auth.pkce.code_verifier",
-  ];
-  cookiesToClear.forEach(cookie => {
-    try {
-      cookieStore.delete(cookie);
-    } catch (e) {
-      // Ignore errors if cookie doesn't exist
-    }
-  });
+  try {
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
+    
+    // Clear all next-auth related cookies by checking their names
+    allCookies.forEach(cookie => {
+      const isAuthCookie = 
+        cookie.name.includes("next-auth") || 
+        cookie.name.includes("__Secure-next-auth") ||
+        cookie.name.includes("__Host-next-auth") ||
+        cookie.name.includes("csrf") ||
+        cookie.name.includes("callback");
+
+      if (isAuthCookie) {
+        try {
+          // Setting with expired date is more reliable in some environments than delete()
+          cookieStore.set(cookie.name, "", { 
+            expires: new Date(0),
+            path: "/",
+            secure: true,
+            httpOnly: true,
+            sameSite: "lax"
+          });
+        } catch (e) {
+          // Ignore errors in non-action contexts
+        }
+      }
+    });
+
+  } catch (err) {
+    console.error("[Auth] Failed to clear cookies:", err);
+  }
 };
+
 
 export async function getBaseUrl() {
   return process.env.BASE_API_URL;
@@ -113,9 +131,20 @@ const getApiServer = (): AxiosInstance => {
       if (isRedirectError(error)) throw error;
 
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+      
+      const errorData = error.response?.data as any;
+      const isTokenNotFound = errorData?.message === 'TOKEN_NOT_FOUND' || errorData?.message === 'INVALID_TOKEN';
+      const is401 = error.response?.status === 401;
 
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // If token is explicitly not found or invalid, don't even try to refresh
+      if (isTokenNotFound) {
+        await clearAuthCookies();
+        redirect("/auth/login");
+      }
+
+      if (is401 && !originalRequest._retry) {
         originalRequest._retry = true;
+
 
         if (!refreshPromise) {
           refreshPromise = (async () => {
