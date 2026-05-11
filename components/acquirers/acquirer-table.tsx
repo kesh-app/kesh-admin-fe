@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { MoreHorizontal } from 'lucide-react'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +22,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
 import { Acquirer } from '@/types/acquirer.type'
+import { getAcquirerById, updateAcquirerStatus } from '@/app/dashboard/acquirers/actions'
 import AcquirerForm from './acquirer-form'
 
 interface AcquirerTableProps {
@@ -33,9 +36,26 @@ export default function AcquirerTable({ acquirers }: AcquirerTableProps) {
   const [editingAcquirer, setEditingAcquirer] = useState<Acquirer | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
-  const handleEdit = (acquirer: Acquirer) => {
-    setEditingAcquirer(acquirer)
-    setIsFormOpen(true)
+  const handleEdit = async (acquirer: Acquirer) => {
+    toast.loading('Fetching details...', { id: 'fetch-acquirer' })
+    const result = await getAcquirerById(acquirer.id)
+    toast.dismiss('fetch-acquirer')
+    
+    if (result.success && result.data) {
+      setEditingAcquirer(result.data)
+      setIsFormOpen(true)
+    } else {
+      toast.error(result.message || 'Failed to fetch details')
+    }
+  }
+
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    const result = await updateAcquirerStatus(id, !currentStatus)
+    if (!result.success) {
+      toast.error(result.message)
+    } else {
+      toast.success(`Acquirer ${!currentStatus ? 'enabled' : 'disabled'} successfully`)
+    }
   }
 
   useEffect(() => {
@@ -93,13 +113,20 @@ export default function AcquirerTable({ acquirers }: AcquirerTableProps) {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/dashboard/acquirers/${acquirer.id}`}>
+                            View Details
+                          </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleEdit(acquirer)}>
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
-                          Disable
+                        <DropdownMenuItem 
+                          className={acquirer.is_status ? "text-destructive" : "text-success"}
+                          onClick={() => handleToggleStatus(acquirer.id, acquirer.is_status)}
+                        >
+                          {acquirer.is_status ? 'Disable' : 'Enable'}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

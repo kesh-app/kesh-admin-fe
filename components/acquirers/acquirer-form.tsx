@@ -16,9 +16,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Acquirer } from '@/types/acquirer.type'
 import { createAcquirer, updateAcquirer } from '@/app/dashboard/acquirers/actions'
+import { Eye, EyeOff } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 
 const acquirerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -42,6 +43,13 @@ interface AcquirerFormProps {
 export default function AcquirerForm({ open, onOpenChange, acquirer }: AcquirerFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const isEdit = !!acquirer
+
+  const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>({
+    client_id: false,
+    secret_id: false,
+    partner_id: false,
+    private_key: false,
+  })
 
   const form = useForm<AcquirerFormValues>({
     resolver: zodResolver(acquirerSchema),
@@ -73,6 +81,10 @@ export default function AcquirerForm({ open, onOpenChange, acquirer }: AcquirerF
     }
   }, [open, acquirer, form])
 
+  const toggleVisibility = (field: string) => {
+    setShowSensitive((prev) => ({ ...prev, [field]: !prev[field] }))
+  }
+
   const onSubmit = async (values: AcquirerFormValues) => {
     setIsLoading(true)
     try {
@@ -97,9 +109,58 @@ export default function AcquirerForm({ open, onOpenChange, acquirer }: AcquirerF
     }
   }
 
+  const FormField = ({ label, name, isSensitive = false, placeholder = '', type = 'input' }: { 
+    label: string, 
+    name: keyof AcquirerFormValues,
+    isSensitive?: boolean,
+    placeholder?: string,
+    type?: 'input' | 'textarea'
+  }) => (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium">{label}</label>
+        {isSensitive && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => toggleVisibility(name)}
+          >
+            {showSensitive[name] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+          </Button>
+        )}
+      </div>
+      <div className="relative">
+        {type === 'textarea' ? (
+          <Textarea
+            {...form.register(name)}
+            placeholder={placeholder}
+            style={{ WebkitTextSecurity: isSensitive && !showSensitive[name] ? 'disc' : 'none' } as React.CSSProperties}
+            className={`font-mono text-xs min-h-[150px] ${
+              form.formState.errors[name] ? 'border-destructive' : ''
+            }`}
+          />
+        ) : (
+          <Input
+            {...form.register(name)}
+            type="text"
+            placeholder={placeholder}
+            autoComplete="off"
+            style={{ WebkitTextSecurity: isSensitive && !showSensitive[name] ? 'disc' : 'none' } as React.CSSProperties}
+            className={form.formState.errors[name] ? 'border-destructive' : ''}
+          />
+        )}
+        {form.formState.errors[name] && (
+          <p className="text-xs text-destructive mt-1">{form.formState.errors[name]?.message}</p>
+        )}
+      </div>
+    </div>
+  )
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-width-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Acquirer' : 'Add New Acquirer'}</DialogTitle>
           <DialogDescription>
@@ -109,105 +170,34 @@ export default function AcquirerForm({ open, onOpenChange, acquirer }: AcquirerF
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4" autoComplete="off">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Name</label>
-              <Input
-                {...form.register('name')}
-                placeholder="e.g. NOBU"
-                className={form.formState.errors.name ? 'border-destructive' : ''}
-              />
-              {form.formState.errors.name && (
-                <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Merchant ID</label>
-              <Input
-                {...form.register('merchant_id')}
-                placeholder="e.g. MID-123"
-                className={form.formState.errors.merchant_id ? 'border-destructive' : ''}
-              />
-              {form.formState.errors.merchant_id && (
-                <p className="text-xs text-destructive">{form.formState.errors.merchant_id.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Client ID</label>
-              <Input
-                {...form.register('client_id')}
-                placeholder="Client ID"
-                className={form.formState.errors.client_id ? 'border-destructive' : ''}
-              />
-              {form.formState.errors.client_id && (
-                <p className="text-xs text-destructive">{form.formState.errors.client_id.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Secret ID</label>
-              <Input
-                {...form.register('secret_id')}
-                placeholder="Secret ID"
-                className={form.formState.errors.secret_id ? 'border-destructive' : ''}
-              />
-              {form.formState.errors.secret_id && (
-                <p className="text-xs text-destructive">{form.formState.errors.secret_id.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Partner ID</label>
-              <Input
-                {...form.register('partner_id')}
-                placeholder="Partner ID"
-                className={form.formState.errors.partner_id ? 'border-destructive' : ''}
-              />
-              {form.formState.errors.partner_id && (
-                <p className="text-xs text-destructive">{form.formState.errors.partner_id.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Endpoint</label>
-              <Input
-                {...form.register('endpoint')}
-                placeholder="https://api.example.id"
-                className={form.formState.errors.endpoint ? 'border-destructive' : ''}
-              />
-              {form.formState.errors.endpoint && (
-                <p className="text-xs text-destructive">{form.formState.errors.endpoint.message}</p>
-              )}
-            </div>
+            <FormField label="Name" name="name" placeholder="e.g. NOBU" />
+            <FormField label="Merchant ID" name="merchant_id" placeholder="e.g. MID-123" />
+            <FormField label="Client ID" name="client_id" isSensitive placeholder="Client ID" />
+            <FormField label="Secret ID" name="secret_id" isSensitive placeholder="Secret ID" />
+            <FormField label="Partner ID" name="partner_id" isSensitive placeholder="Partner ID" />
+            <FormField label="Endpoint" name="endpoint" placeholder="https://api.example.id" />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Private Key</label>
-            <Textarea
-              {...form.register('private_key')}
-              placeholder="-----BEGIN PRIVATE KEY-----..."
-              className={`font-mono text-xs min-h-[150px] ${
-                form.formState.errors.private_key ? 'border-destructive' : ''
-              }`}
-            />
-            {form.formState.errors.private_key && (
-              <p className="text-xs text-destructive">{form.formState.errors.private_key.message}</p>
-            )}
-          </div>
+          <FormField 
+            label="Private Key" 
+            name="private_key" 
+            type="textarea" 
+            isSensitive 
+            placeholder="-----BEGIN PRIVATE KEY-----..." 
+          />
 
           {isEdit && (
             <div className="flex items-center space-x-2 pt-2">
-              <Checkbox
+              <Switch
                 id="is_status"
                 checked={form.watch('is_status')}
-                onCheckedChange={(checked) => form.setValue('is_status', !!checked)}
+                onCheckedChange={(checked: boolean) => form.setValue('is_status', !!checked)}
               />
               <label
                 htmlFor="is_status"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-sm font-medium leading-none"
               >
                 Active Status
               </label>

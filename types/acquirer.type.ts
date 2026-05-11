@@ -30,3 +30,4 @@ export interface UpdateAcquirerRequest extends CreateAcquirerRequest {
 }
 
 export type AcquirerListResponse = ApiResponse<Acquirer[]>;
+export type AcquirerDetailResponse = ApiResponse<Acquirer>;
