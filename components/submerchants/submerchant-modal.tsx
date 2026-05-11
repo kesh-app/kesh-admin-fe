@@ -25,9 +25,11 @@ interface SubmerchantModalProps {
   mode: 'view' | 'edit' | null
   onClose: () => void
   initialData?: SubMerchant
+  onSuccess?: () => void
+  revalidatePath?: string
 }
 
-export default function SubmerchantModal({ id, mode, onClose, initialData }: SubmerchantModalProps) {
+export default function SubmerchantModal({ id, mode, onClose, initialData, onSuccess, revalidatePath }: SubmerchantModalProps) {
   const [formData, setFormData] = useState<Partial<SubMerchant>>(initialData || {})
   const [isSubmitting, setIsSubmitting] = useState(false)
   
@@ -71,10 +73,11 @@ export default function SubmerchantModal({ id, mode, onClose, initialData }: Sub
       sub_merchant_name: formData.sub_merchant_name,
       store_id: formData.store_id,
       acquirer_id: formData.acquirer_id, // Use the selected acquirer_id
-    })
+    }, revalidatePath)
     setIsSubmitting(false)
 
     if (result.success) {
+      onSuccess?.()
       onClose()
     } else {
       alert(result.message)
@@ -232,4 +235,3 @@ export default function SubmerchantModal({ id, mode, onClose, initialData }: Sub
     </Dialog>
   )
 }
-

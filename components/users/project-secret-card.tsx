@@ -107,16 +107,18 @@ export default function ProjectSecretCard({ projectSecret }: ProjectSecretCardPr
           />
         </div>
 
-        {/* IDs & Timeline */}
+        {/* Timeline */}
         <div className="pt-4 border-t space-y-3">
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Acquirer</span>
-            <span className="font-medium">{projectSecret.acquirer.name}</span>
-          </div>
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Created At</span>
             <span className="font-medium">
               {format(new Date(projectSecret.created_at), 'PPPp')}
+            </span>
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Updated At</span>
+            <span className="font-medium">
+              {format(new Date(projectSecret.updated_at), 'PPPp')}
             </span>
           </div>
         </div>
