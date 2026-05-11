@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Acquirer } from '@/types/acquirer.type'
+import AcquirerForm from './acquirer-form'
 
 interface AcquirerTableProps {
   acquirers: Acquirer[]
@@ -29,6 +30,13 @@ interface AcquirerTableProps {
 
 export default function AcquirerTable({ acquirers }: AcquirerTableProps) {
   const [isMounted, setIsMounted] = useState(false)
+  const [editingAcquirer, setEditingAcquirer] = useState<Acquirer | null>(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+
+  const handleEdit = (acquirer: Acquirer) => {
+    setEditingAcquirer(acquirer)
+    setIsFormOpen(true)
+  }
 
   useEffect(() => {
     setIsMounted(true)
@@ -86,7 +94,9 @@ export default function AcquirerTable({ acquirers }: AcquirerTableProps) {
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>View Details</DropdownMenuItem>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEdit(acquirer)}>
+                          Edit
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem className="text-destructive">
                           Disable
@@ -113,6 +123,12 @@ export default function AcquirerTable({ acquirers }: AcquirerTableProps) {
           )}
         </TableBody>
       </Table>
+
+      <AcquirerForm
+        open={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        acquirer={editingAcquirer}
+      />
     </div>
   )
 }

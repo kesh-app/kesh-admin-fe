@@ -5,6 +5,7 @@ import { AcquirerListResponse } from '@/types/acquirer.type'
 import AcquirerFilters from '@/components/acquirers/acquirer-filters'
 import AcquirerTable from '@/components/acquirers/acquirer-table'
 import AcquirerPagination from '@/components/acquirers/acquirer-pagination'
+import AddAcquirerButton from '@/components/acquirers/add-acquirer-button'
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -44,10 +45,6 @@ export default async function AcquirersPage({ searchParams }: PageProps) {
             Manage payment acquirer integrations
           </p>
         </div>
-        {/* <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Acquirer
-        </Button> */}
       </div>
 
       <AcquirerFilters />
@@ -55,6 +52,7 @@ export default async function AcquirersPage({ searchParams }: PageProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
           <CardTitle>Bank Acquirers</CardTitle>
+          <AddAcquirerButton />
         </CardHeader>
         <CardContent>
           {error ? (
