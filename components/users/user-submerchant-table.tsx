@@ -84,7 +84,7 @@ export default function UserSubMerchantTable({ submerchants, userId }: UserSubMe
         <div className="space-y-1">
           <h3 className="text-xl font-black flex items-center gap-2">
             <ShieldCheck className="h-6 w-6 text-primary" />
-            Sub-Merchant Directory
+            Sub Merchants
           </h3>
           <p className="text-sm text-muted-foreground">Manage and monitor all sub-merchants assigned to this user.</p>
         </div>
