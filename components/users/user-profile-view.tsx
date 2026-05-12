@@ -29,8 +29,8 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
         onSuccess={() => {
           window.location.reload()
         }}
-        initialData={user.sub_merchant}
-        initialAcquirerName={user.project_secret?.acquirer?.name}
+        // initialData={user.sub_merchant}
+        // initialAcquirerName={user.project_secret?.acquirer?.name}
       />
       {/* Left Column: Profile Overview */}
       <div className="lg:col-span-1 space-y-6">
