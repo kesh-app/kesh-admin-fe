@@ -33,8 +33,8 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
         onSuccess={() => {
           window.location.reload()
         }}
-        initialData={null}
-        initialAcquirerName={user.project_secret?.acquirer?.name}
+        // initialData={user.sub_merchant}
+        // initialAcquirerName={user.project_secret?.acquirer?.name}
       />
       <UserBulkAssignModal
         userId={user.id}
