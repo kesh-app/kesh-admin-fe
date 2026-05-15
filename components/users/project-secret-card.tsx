@@ -11,48 +11,80 @@ interface ProjectSecretCardProps {
   projectSecret: ProjectSecret
 }
 
-export default function ProjectSecretCard({ projectSecret }: ProjectSecretCardProps) {
+function safeFormatDate(date?: string | null) {
+  if (!date) return '-'
+
+  const parsedDate = new Date(date)
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return '-'
+  }
+
+  return format(parsedDate, 'PPPp')
+}
+
+function safeValue(value?: string | null) {
+  return value && value.trim() !== '' ? value : '-'
+}
+
+export default function ProjectSecretCard({
+  projectSecret,
+}: ProjectSecretCardProps) {
   const [showApiKey, setShowApiKey] = useState(false)
   const [showApiSecret, setShowApiSecret] = useState(false)
 
-  const SecretField = ({ 
-    label, 
-    value, 
-    show, 
-    onToggle 
-  }: { 
-    label: string, 
-    value: string, 
-    show: boolean, 
-    onToggle: () => void 
+  const acquirerName = projectSecret.acquirer?.name || '-'
+
+  const SecretField = ({
+    label,
+    value,
+    show,
+    onToggle,
+  }: {
+    label: string
+    value?: string | null
+    show: boolean
+    onToggle: () => void
   }) => (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium text-muted-foreground">{label}</label>
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <label className="text-sm font-medium text-muted-foreground">
+          {label}
+        </label>
+
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onToggle}
           className="h-8 px-2"
+          disabled={!value}
         >
           {show ? (
-            <><EyeOff className="h-4 w-4 mr-2" /> Hide</>
+            <>
+              <EyeOff className="mr-2 h-4 w-4" /> Hide
+            </>
           ) : (
-            <><Eye className="h-4 w-4 mr-2" /> Show</>
+            <>
+              <Eye className="mr-2 h-4 w-4" /> Show
+            </>
           )}
         </Button>
       </div>
+
       <div className="relative group">
-        <div className={`
-          font-mono text-sm p-3 bg-muted rounded-md break-all pr-10
-          ${!show && 'blur-sm select-none'}
-          transition-all duration-200
-        `}>
-          {value}
+        <div
+          className={`
+            font-mono text-sm p-3 bg-muted rounded-md break-all pr-10
+            ${!show && value ? 'blur-sm select-none' : ''}
+            transition-all duration-200
+          `}
+        >
+          {safeValue(value)}
         </div>
-        {!show && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-xs font-semibold bg-background/80 px-2 py-1 rounded shadow-sm">
+
+        {!show && value && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="rounded bg-background/80 px-2 py-1 text-xs font-semibold shadow-sm">
               Click "Show" to reveal
             </span>
           </div>
@@ -65,58 +97,81 @@ export default function ProjectSecretCard({ projectSecret }: ProjectSecretCardPr
     <Card className="overflow-hidden border-primary/20 shadow-lg">
       <CardHeader className="bg-primary/5 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-lg">
+          <div className="rounded-lg bg-primary/10 p-2">
             <Shield className="h-5 w-5 text-primary" />
           </div>
+
           <CardTitle className="text-xl">Project Credentials</CardTitle>
         </div>
       </CardHeader>
-      <CardContent className="pt-6 space-y-6">
-        {/* Project Header */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-            <Terminal className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Project Name</p>
-              <p className="font-bold text-foreground">{projectSecret.project_name}</p>
+
+      <CardContent className="space-y-6 pt-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex items-start gap-3 rounded-lg border bg-card p-3">
+            <Terminal className="mt-0.5 h-5 w-5 text-muted-foreground" />
+
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Project Name
+              </p>
+
+              <p className="truncate font-bold text-foreground">
+                {safeValue(projectSecret.project_name)}
+              </p>
             </div>
           </div>
-          <div className="flex items-start gap-3 p-3 rounded-lg border bg-card">
-            <Globe className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Callback URL</p>
-              <p className="font-medium text-foreground truncate max-w-[200px]" title={projectSecret.callback_url}>
-                {projectSecret.callback_url}
+
+          <div className="flex items-start gap-3 rounded-lg border bg-card p-3">
+            <Globe className="mt-0.5 h-5 w-5 text-muted-foreground" />
+
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Callback URL
+              </p>
+
+              <p
+                className="max-w-[260px] truncate font-medium text-foreground"
+                title={projectSecret.callback_url || '-'}
+              >
+                {safeValue(projectSecret.callback_url)}
               </p>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          <SecretField 
-            label="API Key" 
-            value={projectSecret.api_key} 
-            show={showApiKey} 
-            onToggle={() => setShowApiKey(!showApiKey)} 
+          <SecretField
+            label="API Key"
+            value={projectSecret.api_key}
+            show={showApiKey}
+            onToggle={() => setShowApiKey((prev) => !prev)}
           />
-          <SecretField 
-            label="API Secret" 
-            value={projectSecret.api_secret} 
-            show={showApiSecret} 
-            onToggle={() => setShowApiSecret(!showApiSecret)} 
+
+          <SecretField
+            label="API Secret"
+            value={projectSecret.api_secret}
+            show={showApiSecret}
+            onToggle={() => setShowApiSecret((prev) => !prev)}
           />
         </div>
 
-        {/* IDs & Timeline */}
-        <div className="pt-4 border-t space-y-3">
-          <div className="flex justify-between text-xs">
+        <div className="space-y-3 border-t pt-4">
+          <div className="flex justify-between gap-4 text-xs">
             <span className="text-muted-foreground">Acquirer</span>
-            <span className="font-medium">{projectSecret.acquirer.name}</span>
+            <span className="font-medium">{acquirerName}</span>
           </div>
-          <div className="flex justify-between text-xs">
+
+          <div className="flex justify-between gap-4 text-xs">
+            <span className="text-muted-foreground">Acquirer ID</span>
+            <span className="font-mono font-medium">
+              {safeValue(projectSecret.acquirer_id)}
+            </span>
+          </div>
+
+          <div className="flex justify-between gap-4 text-xs">
             <span className="text-muted-foreground">Created At</span>
             <span className="font-medium">
-              {format(new Date(projectSecret.created_at), 'PPPp')}
+              {safeFormatDate(projectSecret.created_at)}
             </span>
           </div>
         </div>
