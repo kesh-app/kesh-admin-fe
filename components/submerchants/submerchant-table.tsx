@@ -27,9 +27,11 @@ import SubmerchantModal from './submerchant-modal'
 
 interface SubmerchantTableProps {
   submerchants: SubMerchant[]
+  revalidatePath?: string
+  hideAcquirer?: boolean
 }
 
-export default function SubmerchantTable({ submerchants }: SubmerchantTableProps) {
+export default function SubmerchantTable({ submerchants, revalidatePath, hideAcquirer }: SubmerchantTableProps) {
   const [isMounted, setIsMounted] = useState(false)
   const [visibleIds, setVisibleIds] = useState<Record<string, boolean>>({})
   const [modalState, setModalState] = useState<{
@@ -79,7 +81,7 @@ export default function SubmerchantTable({ submerchants }: SubmerchantTableProps
             <TableHead>Sub-Merchant ID</TableHead>
             <TableHead>Store ID</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Acquirer</TableHead>
+            {!hideAcquirer && <TableHead>Acquirer</TableHead>}
             <TableHead>Created At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -127,11 +129,13 @@ export default function SubmerchantTable({ submerchants }: SubmerchantTableProps
                   </Badge>
                 </TableCell>
 
-                <TableCell>
-                  <Badge variant="outline">
-                    {item?.acquirer?.name || 'N/A'}
-                  </Badge>
-                </TableCell>
+                {!hideAcquirer && (
+                  <TableCell>
+                    <Badge variant="outline">
+                      {item?.acquirer?.name || 'N/A'}
+                    </Badge>
+                  </TableCell>
+                )}
 
                 <TableCell className="text-muted-foreground" suppressHydrationWarning>
                   {item?.created_at ? format(new Date(item.created_at), 'dd MMM yyyy') : '-'}
@@ -190,6 +194,7 @@ export default function SubmerchantTable({ submerchants }: SubmerchantTableProps
         mode={modalState.mode}
         initialData={modalState.data}
         onClose={closeModal}
+        revalidatePath={revalidatePath}
       />
     </div>
   )

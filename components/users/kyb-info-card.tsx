@@ -1,8 +1,9 @@
-import { Building2, User, Phone, Mail, MapPin, CreditCard, FileText, XCircle, Clock } from 'lucide-react'
+import { Building2, User, Phone, Mail, MapPin, CreditCard, FileText, XCircle, Clock, ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { KYB } from '@/types/user.type'
 import { format } from 'date-fns'
+import Link from 'next/link'
 
 interface KYBInfoCardProps {
   kyb: KYB
@@ -47,13 +48,20 @@ export default function KYBInfoCard({ kyb }: KYBInfoCardProps) {
           <div className="p-2 bg-primary/10 rounded-lg">
             <Building2 className="h-5 w-5 text-primary" />
           </div>
-          <CardTitle>Business Verification (KYB)</CardTitle>
+          <CardTitle>Business Verification (KYB) </CardTitle>
+          
         </div>
-        <Badge variant={getStatusColor(kyb.status) as any} className="capitalize px-4 py-1">
-          {kyb.status}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant={getStatusColor(kyb.status) as any} className="capitalize px-4 py-1">
+            {kyb.status}
+          </Badge>
+        </div>
       </CardHeader>
       <CardContent className="space-y-8">
+        <Link href={`/dashboard/kyb/${kyb.id}`} className='flex items-center justify-end'>
+          <ExternalLink className="h-4 w-4 mr-2" />
+          View Full Details
+        </Link>
         {/* Business Section */}
         <Section title="Business Info" icon={Building2}>
           <InfoItem label="Company Name" value={kyb.company_name} />
