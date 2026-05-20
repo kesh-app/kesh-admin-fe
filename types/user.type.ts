@@ -54,7 +54,7 @@ export interface ProjectSecret {
   disburse_acquirer_rtol_id: string;
   disburse_acquirer_bifast_id: string;
   disburse_acquirer_intrabank_id: string;
-  acquirer: Acquirer;
+  acquirer?: Acquirer | null;
 }
 
 

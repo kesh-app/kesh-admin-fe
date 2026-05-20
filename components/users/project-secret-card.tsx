@@ -171,13 +171,14 @@ export default function ProjectSecretCard({
           <div className="flex justify-between gap-4 text-xs">
             <span className="text-muted-foreground">Created At</span>
             <span className="font-medium">
-              {format(new Date(projectSecret.created_at), 'PPPp')}
+              {safeFormatDate(projectSecret.created_at)}
             </span>
           </div>
-          <div className="flex justify-between text-xs">
+
+          <div className="flex justify-between gap-4 text-xs">
             <span className="text-muted-foreground">Updated At</span>
             <span className="font-medium">
-              {format(new Date(projectSecret.updated_at), 'PPPp')}
+              {safeFormatDate(projectSecret.updated_at)}
             </span>
           </div>
         </div>
