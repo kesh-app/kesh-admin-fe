@@ -10,13 +10,30 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+function getStringParam(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value[0] || ''
+  return value || ''
+}
+
+function getStartOfDay(date?: string) {
+  if (!date) return undefined
+  return `${date}T00:00:00`
+}
+
+function getEndOfDay(date?: string) {
+  if (!date) return undefined
+  return `${date}T23:59:59`
+}
+
 export default async function TransactionsPage({ searchParams }: PageProps) {
   const params = await searchParams
+
   const page = Number(params.page) || 1
-  const status = (params.status as string) || ''
   const limit = Number(params.limit) || 10
-  const fromDate = (params.fromDate as string) || ''
-  const toDate = (params.toDate as string) || ''
+
+  const search = getStringParam(params.search)
+  const status = getStringParam(params.status)
+  const transactionDate = getStringParam(params.transactionDate)
 
   let qrisData: QrisListResponse | null = null
   let error: string | null = null
@@ -25,12 +42,18 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
     const response = await apiServer.get<QrisListResponse>('/v1/qris', {
       params: {
         page,
-        status: status || undefined,
         limit,
-        fromDate: fromDate || undefined,
-        toDate: toDate || undefined,
+
+        search: search || undefined,
+        status: status || undefined,
+
+        // UI tetap 1 field Transaction Date,
+        // backend tetap filter createdAt pakai range 1 hari penuh.
+        fromDate: getStartOfDay(transactionDate),
+        toDate: getEndOfDay(transactionDate),
       },
     })
+
     qrisData = response.data
   } catch (e: any) {
     console.error('Failed to fetch transactions:', e)
@@ -39,11 +62,12 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
-          <p className="text-muted-foreground mt-2">Monitor QRIS transactions</p>
+          <p className="mt-2 text-muted-foreground">
+            Monitor QRIS transactions
+          </p>
         </div>
       </div>
 
@@ -58,7 +82,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
 
         <CardContent>
           {error ? (
-            <div className="bg-destructive/10 text-destructive p-4 rounded-md text-sm">
+            <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
               {error}
             </div>
           ) : qrisData ? (
