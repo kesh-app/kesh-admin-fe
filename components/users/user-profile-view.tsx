@@ -1,25 +1,170 @@
 "use client";
 
-import { User as UserIcon, Mail, Phone, Calendar, ShieldAlert, Wallet } from 'lucide-react'
+import {
+  User as UserIcon,
+  Mail,
+  Phone,
+  Calendar,
+  ShieldAlert,
+  Wallet,
+  TrendingUp,
+  Activity,
+  CheckCircle2,
+  Percent,
+} from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { User } from '@/types/user.type'
+import { User, QrisSummary } from '@/types/user.type'
 import { format } from 'date-fns'
 import KYBInfoCard from './kyb-info-card'
 import ProjectSecretCard from './project-secret-card'
-import { useState } from 'react'
+import { Suspense, use, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Store } from 'lucide-react'
+import { Store, FileUp } from 'lucide-react'
 import AssignSubMerchantModal from './assign-sub-merchant-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserBulkAssignModal from './user-bulk-assign-modal'
-import { FileUp } from 'lucide-react'
 
-interface UserProfileViewProps {
-  user: User
+// ---------------------------------------------------------------------------
+// Skeleton for the QRIS summary card while the promise is pending
+// ---------------------------------------------------------------------------
+function QrisSummarySkeleton() {
+  return (
+    <Card className="border-none shadow-xl overflow-hidden">
+      <CardContent className="p-6">
+        {/* header skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div className="space-y-2">
+            <div className="h-5 w-48 rounded-lg bg-muted animate-pulse" />
+            <div className="h-3 w-64 rounded-md bg-muted/70 animate-pulse" />
+          </div>
+          <div className="h-5 w-24 rounded-full bg-muted animate-pulse" />
+        </div>
+        {/* stat tiles skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 p-4 rounded-xl border border-border/30 bg-muted/20"
+            >
+              <div className="h-11 w-11 rounded-xl bg-muted animate-pulse shrink-0" />
+              <div className="flex flex-col gap-2 flex-1 min-w-0">
+                <div className="h-2.5 w-16 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-20 rounded bg-muted/70 animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
-export default function UserProfileView({ user }: UserProfileViewProps) {
+// ---------------------------------------------------------------------------
+// Inner component that resolves the promise via React use()
+// ---------------------------------------------------------------------------
+function QrisSummaryCard({ promise }: { promise: Promise<QrisSummary | null> }) {
+  const qrisSummary = use(promise)
+
+  const stats: Array<{
+    label: string
+    value: string
+    icon: typeof Wallet
+    color: 'emerald' | 'blue' | 'orange' | 'teal' | 'violet'
+    wide?: boolean
+  }> = [
+    {
+      label: 'Current Balance',
+      value: `Rp ${parseFloat(qrisSummary?.current_balance || '0').toLocaleString('id-ID')}`,
+      icon: Wallet,
+      color: 'emerald',
+    },
+    {
+      label: 'Total Revenue',
+      value: `Rp ${parseFloat(qrisSummary?.total_revenue || '0').toLocaleString('id-ID')}`,
+      icon: TrendingUp,
+      color: 'blue',
+    },
+    {
+      label: 'Total Tx',
+      value: String(qrisSummary?.total_transactions ?? 0),
+      icon: Activity,
+      color: 'orange',
+    },
+    {
+      label: 'Success Tx',
+      value: String(qrisSummary?.success_count ?? 0),
+      icon: CheckCircle2,
+      color: 'teal',
+    },
+    {
+      label: 'Success Rate',
+      value: `${qrisSummary?.success_rate ?? 0}%`,
+      icon: Percent,
+      color: 'violet',
+      wide: true,
+    },
+  ]
+
+  return (
+    <Card className="border-none shadow-xl bg-linear-to-br from-card to-card/50 overflow-hidden">
+      <CardContent className="p-6">
+        {/* header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Today's QRIS Summary
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Real-time performance and transaction overview for today
+            </p>
+          </div>
+        </div>
+
+        {!qrisSummary ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground border border-dashed rounded-xl bg-muted/10">
+            <Activity className="h-8 w-8 mb-2 opacity-20" />
+            <p className="text-sm font-medium">No summary data available for today</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {stats.map(({ label, value, icon: Icon, color, wide }) => (
+              <div
+                key={label}
+                className={`flex items-center gap-3 p-4 rounded-xl bg-background/40 border border-border/50 hover:bg-background/60 transition-colors group${wide ? ' col-span-2 md:col-span-1' : ''}`}
+              >
+                <div
+                  className={`p-3 rounded-xl bg-${color}-500/10 text-${color}-500 group-hover:scale-110 transition-transform shrink-0`}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
+                    {label}
+                  </span>
+                  <span className="text-base font-extrabold text-foreground truncate mt-0.5">
+                    {value}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Main exported component
+// ---------------------------------------------------------------------------
+interface UserProfileViewProps {
+  user: User
+  qrisSummaryPromise: Promise<QrisSummary | null>
+}
+
+export default function UserProfileView({ user, qrisSummaryPromise }: UserProfileViewProps) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
 
@@ -45,6 +190,8 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
           window.location.reload()
         }}
       />
+
+      {/* ── Top row: Profile + Quick contact ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Profile Summary Card */}
         <Card className="md:col-span-2 overflow-hidden border-none shadow-xl bg-linear-to-br from-card to-card/50">
@@ -67,24 +214,30 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
                     USER-ID: {user.id}
                   </p>
                   <div className="flex gap-2 mt-4">
-                    <Badge variant={user.is_active ? 'success' : 'secondary'} className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider">
+                    <Badge
+                      variant={user.is_active ? 'success' : 'secondary'}
+                      className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider"
+                    >
                       {user.is_active ? 'Active' : 'Inactive'}
                     </Badge>
-                    <Badge variant={user.is_verified ? 'success' : 'outline'} className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider">
+                    <Badge
+                      variant={user.is_verified ? 'success' : 'outline'}
+                      className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider"
+                    >
                       {user.is_verified ? 'Verified' : 'Unverified'}
                     </Badge>
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
+                  <Button
                     onClick={() => setIsAssignModalOpen(true)}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 px-6 h-11"
                   >
                     <Store className="mr-2 h-4 w-4" />
                     Add SMID
                   </Button>
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => setIsBulkModalOpen(true)}
                     className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
@@ -146,15 +299,20 @@ export default function UserProfileView({ user }: UserProfileViewProps) {
         </Card>
       </div>
 
-      {/* Sub-Merchant Section - High Priority Table */}
+      {/* ── Today's QRIS Summary — streamed in parallel, skeleton while loading ── */}
+      <Suspense fallback={<QrisSummarySkeleton />}>
+        <QrisSummaryCard promise={qrisSummaryPromise} />
+      </Suspense>
+
+      {/* ── Sub-Merchant Section ── */}
       <div className="w-full">
-        <UserSubMerchantTable 
-          submerchants={user.sub_merchants || []} 
-          userId={user.id} 
+        <UserSubMerchantTable
+          submerchants={user.sub_merchants || []}
+          userId={user.id}
         />
       </div>
 
-      {/* Bottom Grid: Credentials & Business Verification */}
+      {/* ── Bottom Grid: Credentials & Business Verification ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">
         <div className="space-y-4">
           <h3 className="text-lg font-bold flex items-center gap-2 px-1">

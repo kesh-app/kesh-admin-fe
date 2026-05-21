@@ -79,3 +79,14 @@ export interface User {
 
 export type UserListResponse = ApiResponse<User[]>;
 export type UserDetailResponse = ApiResponse<User>;
+
+export interface QrisSummary {
+  current_balance: string;
+  total_revenue: string;
+  total_transactions: number;
+  success_count: number;
+  success_rate: number;
+}
+
+export type QrisSummaryResponse = ApiResponse<QrisSummary>;
+

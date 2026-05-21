@@ -2,7 +2,7 @@ import { ArrowLeft, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { apiServer } from '@/libs/api-server.lib'
-import { UserDetailResponse } from '@/types/user.type'
+import { UserDetailResponse, QrisSummaryResponse } from '@/types/user.type'
 import { Button } from '@/components/ui/button'
 import UserProfileView from '@/components/users/user-profile-view'
 
@@ -26,6 +26,15 @@ export default async function UserDetailPage({ params }: PageProps) {
     }
     error = e.message || 'Failed to load user details'
   }
+
+  // Initiate QRIS summary fetch in parallel without awaiting it
+  const qrisSummaryPromise = apiServer
+    .get<QrisSummaryResponse>(`/v1/users/${id}/qris-summary`)
+    .then(res => res.data.data)
+    .catch(e => {
+      console.error('Failed to fetch QRIS summary:', e)
+      return null
+    })
 
   if (!userData?.data && !error) {
     notFound()
@@ -76,8 +85,10 @@ export default async function UserDetailPage({ params }: PageProps) {
           </Button>
         </div>
       ) : userData?.data ? (
-        <UserProfileView user={userData.data} />
+        <UserProfileView user={userData.data} qrisSummaryPromise={qrisSummaryPromise} />
       ) : null}
     </div>
   )
 }
+
+
