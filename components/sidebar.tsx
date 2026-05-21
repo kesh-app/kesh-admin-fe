@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   ShieldCheck,
   CreditCard,
+  Banknote,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ const navigation = [
   { name: "Users", href: "/dashboard/users", icon: Users },
   { name: "KYB Management", href: "/dashboard/kyb", icon: ShieldCheck },
   { name: "Acquirers", href: "/dashboard/acquirers", icon: Building2 },
+  { name: "Disburse Acquirer", href: "/dashboard/disburse-acquirers", icon: Banknote },
   { name: "Submerchants", href: "/dashboard/submerchants", icon: ShoppingCart },
 ];
 
