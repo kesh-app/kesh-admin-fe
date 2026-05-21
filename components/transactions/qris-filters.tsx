@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { Search, X } from 'lucide-react'
+
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-
 import { QrisPaymentStatus } from '@/types/qris.type'
 
 export default function QrisFilters() {
@@ -13,109 +14,131 @@ export default function QrisFilters() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const [search, setSearch] = useState(searchParams.get('search') || '')
   const [status, setStatus] = useState(searchParams.get('status') || '')
-  const [fromDate, setFromDate] = useState(searchParams.get('fromDate') || '')
-  const [toDate, setToDate] = useState(searchParams.get('toDate') || '')
+  const [transactionDate, setTransactionDate] = useState(
+    searchParams.get('transactionDate') || '',
+  )
+  const [error, setError] = useState<string | null>(null)
 
-  const handleFilterChange = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+
+    if (!transactionDate) {
+      setError('Transaction Date wajib diisi untuk melakukan pencarian.')
+      return
     }
+
+    const params = new URLSearchParams(searchParams.toString())
+
     params.set('page', '1')
+    params.set('transactionDate', transactionDate)
+
+    if (search.trim()) {
+      params.set('search', search.trim())
+    } else {
+      params.delete('search')
+    }
+
+    // Status boleh null/kosong
+    if (status) {
+      params.set('status', status)
+    } else {
+      params.delete('status')
+    }
+
     router.push(`${pathname}?${params.toString()}`)
   }
 
-  const handleDateChange = (newFromDate: string, newToDate: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    
-    // Only fetch if both are present OR both are empty (cleared)
-    if ((newFromDate && newToDate) || (!newFromDate && !newToDate)) {
-      if (newFromDate) params.set('fromDate', newFromDate)
-      else params.delete('fromDate')
-      
-      if (newToDate) params.set('toDate', newToDate)
-      else params.delete('toDate')
-      
-      params.set('page', '1')
-      router.push(`${pathname}?${params.toString()}`)
-    }
-  }
-
   const handleClear = () => {
+    setSearch('')
     setStatus('')
-    setFromDate('')
-    setToDate('')
+    setTransactionDate('')
+    setError(null)
+
     router.push(pathname)
   }
+
+  const hasFilter =
+    searchParams.get('search') ||
+    searchParams.get('status') ||
+    searchParams.get('transactionDate')
 
   return (
     <Card>
       <CardContent className="pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-          {/* Status */}
-          <div>
-            <label className="text-sm font-medium block mb-2">Status</label>
-            <select
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value)
-                handleFilterChange('status', e.target.value)
-              }}
-              className="h-10 w-full px-3 border border-input rounded-md bg-background text-sm"
-            >
-              <option value="">All Status</option>
-              {Object.values(QrisPaymentStatus).map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 items-end gap-4 md:grid-cols-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium">Search</label>
 
-          {/* From Date */}
-          <div>
-            <label className="text-sm font-medium block mb-2">From Date</label>
-            <div className="relative">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                <Input
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Partner ref / merchant / RRN"
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">Status</label>
+
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">All Status</option>
+
+                {Object.values(QrisPaymentStatus).map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Transaction Date
+              </label>
+
               <Input
                 type="date"
-                value={fromDate}
-                onChange={(e) => {
-                  const val = e.target.value
-                  setFromDate(val)
-                  handleDateChange(val, toDate)
-                }}
+                value={transactionDate}
+                onChange={(event) => setTransactionDate(event.target.value)}
               />
             </div>
-          </div>
 
-          {/* To Date */}
-          <div>
-            <label className="text-sm font-medium block mb-2">To Date</label>
-            <div className="relative">
-              <Input
-                type="date"
-                value={toDate}
-                onChange={(e) => {
-                  const val = e.target.value
-                  setToDate(val)
-                  handleDateChange(fromDate, val)
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Clear */}
-          <div className="flex gap-2">
-            {(status || fromDate || toDate) && (
-              <Button variant="outline" onClick={handleClear} className="w-full">
-                Clear Filters
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">
+                Search
               </Button>
-            )}
+
+              {hasFilter && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={handleClear}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+
+          {error && (
+            <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+        </form>
       </CardContent>
     </Card>
   )
