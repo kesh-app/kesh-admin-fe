@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   CreditCard,
   Banknote,
+  History,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Acquirers", href: "/dashboard/acquirers", icon: Building2 },
   { name: "Disburse Acquirer", href: "/dashboard/disburse-acquirers", icon: Banknote },
   { name: "Submerchants", href: "/dashboard/submerchants", icon: ShoppingCart },
+  { name: "History Disburse Intrabank", href: "/dashboard/history-disburse-intrabank", icon: History },
 ];
 
 export function Sidebar() {
