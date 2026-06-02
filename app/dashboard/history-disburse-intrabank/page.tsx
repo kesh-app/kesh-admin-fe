@@ -42,7 +42,9 @@ export default async function HistoryDisburseIntrabankPage({ searchParams }: Pag
       </div>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7" />
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+          <CardTitle>Sweep Events</CardTitle>
+        </CardHeader>
         <CardContent>
           {error ? (
             <div className="bg-destructive/10 text-destructive p-4 rounded-md text-sm">
