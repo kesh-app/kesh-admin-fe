@@ -33,8 +33,6 @@ export default function ProjectSecretCard({
   const [showApiKey, setShowApiKey] = useState(false)
   const [showApiSecret, setShowApiSecret] = useState(false)
 
-  const acquirerName = projectSecret.acquirer?.name || '-'
-
   const SecretField = ({
     label,
     value,
@@ -96,12 +94,27 @@ export default function ProjectSecretCard({
   return (
     <Card className="overflow-hidden border-primary/20 shadow-lg">
       <CardHeader className="bg-primary/5 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2">
-            <Shield className="h-5 w-5 text-primary" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary/10 p-2">
+              <Shield className="h-5 w-5 text-primary" />
+            </div>
+            <CardTitle className="text-xl">Project Credentials</CardTitle>
           </div>
-
-          <CardTitle className="text-xl">Project Credentials</CardTitle>
+          {/* <div className="flex items-center gap-2">
+            <Badge
+              variant={projectSecret.can_qris ? 'success' : 'secondary'}
+              className="text-[10px] font-bold uppercase tracking-wider px-3 rounded-full"
+            >
+              QRIS {projectSecret.can_qris ? 'ON' : 'OFF'}
+            </Badge>
+            <Badge
+              variant={projectSecret.can_disburse ? 'success' : 'secondary'}
+              className="text-[10px] font-bold uppercase tracking-wider px-3 rounded-full"
+            >
+              Disburse {projectSecret.can_disburse ? 'ON' : 'OFF'}
+            </Badge>
+          </div> */}
         </div>
       </CardHeader>
 
@@ -156,18 +169,6 @@ export default function ProjectSecretCard({
         </div>
 
         <div className="space-y-3 border-t pt-4">
-          <div className="flex justify-between gap-4 text-xs">
-            <span className="text-muted-foreground">Acquirer</span>
-            <span className="font-medium">{acquirerName}</span>
-          </div>
-
-          <div className="flex justify-between gap-4 text-xs">
-            <span className="text-muted-foreground">Acquirer ID</span>
-            <span className="font-mono font-medium">
-              {safeValue(projectSecret.acquirer_id)}
-            </span>
-          </div>
-
           <div className="flex justify-between gap-4 text-xs">
             <span className="text-muted-foreground">Created At</span>
             <span className="font-medium">

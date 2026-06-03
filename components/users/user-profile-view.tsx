@@ -15,24 +15,25 @@ import {
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { User, QrisSummary } from '@/types/user.type'
+import { SubMerchant } from '@/types/sub-merchant.type'
+import { PaginationMeta } from '@/types/api.type'
 import { format } from 'date-fns'
 import KYBInfoCard from './kyb-info-card'
 import ProjectSecretCard from './project-secret-card'
-import { Suspense, use, useState } from 'react'
+import { useState, use, Suspense } from 'react'
 import { Button } from '@/components/ui/button'
 import { Store, FileUp } from 'lucide-react'
 import AssignSubMerchantModal from './assign-sub-merchant-modal'
-import UserSubMerchantTable from './user-submerchant-table'
 import UserBulkAssignModal from './user-bulk-assign-modal'
+import UserSubMerchantTable from './user-submerchant-table'
 
 // ---------------------------------------------------------------------------
-// Skeleton for the QRIS summary card while the promise is pending
+// Skeleton for QRIS Summary
 // ---------------------------------------------------------------------------
 function QrisSummarySkeleton() {
   return (
     <Card className="border-none shadow-xl overflow-hidden">
       <CardContent className="p-6">
-        {/* header skeleton */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="space-y-2">
             <div className="h-5 w-48 rounded-lg bg-muted animate-pulse" />
@@ -40,7 +41,6 @@ function QrisSummarySkeleton() {
           </div>
           <div className="h-5 w-24 rounded-full bg-muted animate-pulse" />
         </div>
-        {/* stat tiles skeleton */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <div
@@ -61,9 +61,9 @@ function QrisSummarySkeleton() {
 }
 
 // ---------------------------------------------------------------------------
-// Inner component that resolves the promise via React use()
+// QRIS Summary Card Resolver
 // ---------------------------------------------------------------------------
-function QrisSummaryCard({ promise }: { promise: Promise<QrisSummary | null> }) {
+function QrisSummaryResolver({ promise }: { promise: Promise<QrisSummary | null> }) {
   const qrisSummary = use(promise)
 
   const stats: Array<{
@@ -157,14 +157,81 @@ function QrisSummaryCard({ promise }: { promise: Promise<QrisSummary | null> }) 
 }
 
 // ---------------------------------------------------------------------------
+// Sub Merchant Table Resolver
+// ---------------------------------------------------------------------------
+function SubMerchantsResolver({
+  promise,
+  userId,
+  smPage,
+  smSearch,
+  smLimit,
+}: {
+  promise: Promise<{ data: SubMerchant[]; meta: PaginationMeta | null } | null>
+  userId: string
+  smPage: number
+  smSearch: string
+  smLimit: number
+}) {
+  const result = use(promise)
+
+  return (
+    <UserSubMerchantTable
+      subMerchants={result?.data || []}
+      subMerchantsMeta={result?.meta || null}
+      userId={userId}
+      currentPage={smPage}
+      currentSearch={smSearch}
+      currentLimit={smLimit}
+    />
+  )
+}
+
+function SubMerchantSkeleton({ limit }: { limit: number }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between px-1">
+        <div className="space-y-1">
+          <div className="h-7 w-48 rounded-lg bg-muted animate-pulse" />
+          <div className="h-4 w-72 rounded bg-muted/70 animate-pulse" />
+        </div>
+      </div>
+      <div className="border-none shadow-2xl rounded-2xl overflow-hidden bg-card">
+        <div className="w-full h-12 bg-primary/2 border-b border-primary/10" />
+        <div className="divide-y">
+          {Array.from({ length: limit }).map((_, i) => (
+             <div key={i} className="flex gap-4 p-4">
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main exported component
 // ---------------------------------------------------------------------------
 interface UserProfileViewProps {
   user: User
   qrisSummaryPromise: Promise<QrisSummary | null>
+  subMerchantsPromise: Promise<{ data: SubMerchant[]; meta: PaginationMeta | null } | null>
+  smPage: number
+  smSearch: string
+  smLimit: number
 }
 
-export default function UserProfileView({ user, qrisSummaryPromise }: UserProfileViewProps) {
+export default function UserProfileView({
+  user,
+  qrisSummaryPromise,
+  subMerchantsPromise,
+  smPage,
+  smSearch,
+  smLimit,
+}: UserProfileViewProps) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
 
@@ -178,8 +245,6 @@ export default function UserProfileView({ user, qrisSummaryPromise }: UserProfil
         onSuccess={() => {
           window.location.reload()
         }}
-        // initialData={user.sub_merchant}
-        // initialAcquirerName={user.project_secret?.acquirer?.name}
       />
       <UserBulkAssignModal
         userId={user.id}
@@ -299,17 +364,22 @@ export default function UserProfileView({ user, qrisSummaryPromise }: UserProfil
         </Card>
       </div>
 
-      {/* ── Today's QRIS Summary — streamed in parallel, skeleton while loading ── */}
+      {/* ── Today's QRIS Summary ── */}
       <Suspense fallback={<QrisSummarySkeleton />}>
-        <QrisSummaryCard promise={qrisSummaryPromise} />
+        <QrisSummaryResolver promise={qrisSummaryPromise} />
       </Suspense>
 
       {/* ── Sub-Merchant Section ── */}
       <div className="w-full">
-        <UserSubMerchantTable
-          submerchants={user.sub_merchants || []}
-          userId={user.id}
-        />
+        <Suspense fallback={<SubMerchantSkeleton limit={smLimit} />}>
+          <SubMerchantsResolver
+            promise={subMerchantsPromise}
+            userId={user.id}
+            smPage={smPage}
+            smSearch={smSearch}
+            smLimit={smLimit}
+          />
+        </Suspense>
       </div>
 
       {/* ── Bottom Grid: Credentials & Business Verification ── */}
