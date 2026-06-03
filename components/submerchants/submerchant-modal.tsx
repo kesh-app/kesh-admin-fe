@@ -71,6 +71,7 @@ export default function SubmerchantModal({ id, mode, onClose, initialData, onSuc
     setIsSubmitting(true)
     const result = await updateSubMerchant(id, {
       sub_merchant_name: formData.sub_merchant_name,
+      sub_merchant_id: formData.sub_merchant_id,
       store_id: formData.store_id,
       acquirer_id: formData.acquirer_id, // Use the selected acquirer_id
     }, revalidatePath)
@@ -129,8 +130,9 @@ export default function SubmerchantModal({ id, mode, onClose, initialData, onSuc
               <Input
                 id="sub_id"
                 value={formData.sub_merchant_id || ''}
-                readOnly
-                className="col-span-3 bg-muted"
+                readOnly={mode === 'view'}
+                onChange={(e) => setFormData({ ...formData, sub_merchant_id: e.target.value })}
+                className={cn("col-span-3", mode === 'view' && "bg-muted")}
               />
             </div>
 
