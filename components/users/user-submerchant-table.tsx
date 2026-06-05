@@ -25,6 +25,7 @@ import { SubMerchant } from '@/types/user.type'
 import { updateSubMerchantStatus } from '@/app/dashboard/submerchants/actions'
 import SubmerchantModal from '@/components/submerchants/submerchant-modal'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 interface UserSubMerchantTableProps {
   submerchants: SubMerchant[]
@@ -32,6 +33,7 @@ interface UserSubMerchantTableProps {
 }
 
 export default function UserSubMerchantTable({ submerchants, userId }: UserSubMerchantTableProps) {
+  const router = useRouter()
   const [isMounted, setIsMounted] = useState(false)
   const [visibleIds, setVisibleIds] = useState<Record<string, boolean>>({})
   const [modalState, setModalState] = useState<{
@@ -202,7 +204,7 @@ export default function UserSubMerchantTable({ submerchants, userId }: UserSubMe
         initialData={modalState.data}
         onClose={closeModal}
         onSuccess={() => {
-          window.location.reload()
+          router.refresh()
         }}
         revalidatePath={`/dashboard/users/${userId}`}
       />

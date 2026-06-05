@@ -24,6 +24,7 @@ import { Store, FileUp } from 'lucide-react'
 import AssignSubMerchantModal from './assign-sub-merchant-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserBulkAssignModal from './user-bulk-assign-modal'
+import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
 // Skeleton for the QRIS summary card while the promise is pending
@@ -167,6 +168,7 @@ interface UserProfileViewProps {
 export default function UserProfileView({ user, qrisSummaryPromise }: UserProfileViewProps) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const router = useRouter()
 
   return (
     <div className="space-y-8 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -176,7 +178,7 @@ export default function UserProfileView({ user, qrisSummaryPromise }: UserProfil
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         onSuccess={() => {
-          window.location.reload()
+          router.refresh()
         }}
         // initialData={user.sub_merchant}
         // initialAcquirerName={user.project_secret?.acquirer?.name}
@@ -187,7 +189,7 @@ export default function UserProfileView({ user, qrisSummaryPromise }: UserProfil
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
         onSuccess={() => {
-          window.location.reload()
+          router.refresh()
         }}
       />
 

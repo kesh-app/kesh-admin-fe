@@ -17,6 +17,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { FileUp, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { bulkAssignSubMerchants } from '@/app/dashboard/submerchants/actions'
+import { sanitizeString } from '@/libs/utils'
 
 interface BulkAssignModalProps {
   isOpen: boolean
@@ -66,12 +67,12 @@ export default function BulkAssignModal({ isOpen, onClose }: BulkAssignModalProp
         }
 
         const formattedData: SubMerchantData[] = rawData.map((item: any) => ({
-          name: item.name || '',
-          email: item.email || '',
-          acquirer: item.acquirer || '',
-          merchant_id: item.merchant_id || '',
-          sub_merchant_id: item.sub_merchant_id || '',
-          store_id: item.store_id || '',
+          name: sanitizeString(item.name),
+          email: sanitizeString(item.email),
+          acquirer: sanitizeString(item.acquirer),
+          merchant_id: sanitizeString(item.merchant_id),
+          sub_merchant_id: sanitizeString(item.sub_merchant_id),
+          store_id: sanitizeString(item.store_id),
         }))
 
         setData(formattedData)
@@ -109,8 +110,12 @@ export default function BulkAssignModal({ isOpen, onClose }: BulkAssignModalProp
     setIsSubmitting(false)
 
     if (result.success) {
+      const responseData = result.data?.data || result.data;
+      const successCount = responseData?.success ?? data.length;
+      const skippedCount = responseData?.skipped ?? 0;
+
       toast.success('Successfully assigned sub-merchants', {
-        description: `${data.length} records processed.`
+        description: `${successCount} success, ${skippedCount} skipped.`
       })
       onClose()
       setData([])
@@ -124,7 +129,7 @@ export default function BulkAssignModal({ isOpen, onClose }: BulkAssignModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-200 max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Bulk Assign Sub-Merchants</DialogTitle>
           <DialogDescription>
