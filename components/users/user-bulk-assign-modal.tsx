@@ -17,6 +17,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { FileUp, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { bulkAssignSubMerchantByUserId } from '@/app/dashboard/submerchants/actions'
+import { sanitizeString } from '@/libs/utils'
 
 interface UserBulkAssignModalProps {
   userId: string
@@ -68,11 +69,11 @@ export default function UserBulkAssignModal({ userId, userName, isOpen, onClose,
         }
 
         const formattedData: SubMerchantData[] = rawData.map((item: any) => ({
-          name: item.name || '',
-          acquirer: item.acquirer || '',
-          merchant_id: item.merchant_id || '',
-          sub_merchant_id: item.sub_merchant_id || '',
-          store_id: item.store_id || '',
+          name: sanitizeString(item.name),
+          acquirer: sanitizeString(item.acquirer),
+          merchant_id: sanitizeString(item.merchant_id),
+          sub_merchant_id: sanitizeString(item.sub_merchant_id),
+          store_id: sanitizeString(item.store_id),
         }))
 
         setData(formattedData)
@@ -110,8 +111,12 @@ export default function UserBulkAssignModal({ userId, userName, isOpen, onClose,
     setIsSubmitting(false)
 
     if (result.success) {
+      const responseData = result.data?.data || result.data;
+      const successCount = responseData?.success ?? data.length;
+      const skippedCount = responseData?.skipped ?? 0;
+
       toast.success('Successfully assigned sub-merchants', {
-        description: `${data.length} records processed for ${userName}.`
+        description: `${successCount} success, ${skippedCount} skipped for ${userName}.`
       })
       onSuccess?.()
       onClose()

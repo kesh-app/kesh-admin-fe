@@ -28,6 +28,7 @@ import { PaginationMeta } from '@/types/api.type'
 import { updateSubMerchantStatus } from '@/app/dashboard/submerchants/actions'
 import SubmerchantModal from '@/components/submerchants/submerchant-modal'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 interface UserSubMerchantTableProps {
   subMerchants: SubMerchant[]
@@ -64,7 +65,6 @@ export default function UserSubMerchantTable({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-
   const [isMounted, setIsMounted] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const [searchInput, setSearchInput] = useState(currentSearch)

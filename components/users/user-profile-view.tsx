@@ -11,6 +11,7 @@ import {
   Activity,
   CheckCircle2,
   Percent,
+  FileText,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -26,6 +27,8 @@ import { Store, FileUp } from 'lucide-react'
 import AssignSubMerchantModal from './assign-sub-merchant-modal'
 import UserBulkAssignModal from './user-bulk-assign-modal'
 import UserSubMerchantTable from './user-submerchant-table'
+import UserDailyReportsModal from './user-daily-reports-modal'
+import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
 // Skeleton for QRIS Summary
@@ -234,6 +237,8 @@ export default function UserProfileView({
 }: UserProfileViewProps) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [isDailyReportsOpen, setIsDailyReportsOpen] = useState(false)
+  const router = useRouter()
 
   return (
     <div className="space-y-8 pb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -243,7 +248,7 @@ export default function UserProfileView({
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         onSuccess={() => {
-          window.location.reload()
+          router.refresh()
         }}
       />
       <UserBulkAssignModal
@@ -252,8 +257,13 @@ export default function UserProfileView({
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
         onSuccess={() => {
-          window.location.reload()
+          router.refresh()
         }}
+      />
+      <UserDailyReportsModal
+        userId={user.id}
+        isOpen={isDailyReportsOpen}
+        onClose={() => setIsDailyReportsOpen(false)}
       />
 
       {/* ── Top row: Profile + Quick contact ── */}
@@ -295,6 +305,14 @@ export default function UserProfileView({
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={() => setIsDailyReportsOpen(true)}
+                    variant="outline"
+                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Daily Reports
+                  </Button>
                   <Button
                     onClick={() => setIsAssignModalOpen(true)}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 px-6 h-11"

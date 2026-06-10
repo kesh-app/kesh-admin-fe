@@ -29,9 +29,9 @@ export async function updateSubMerchant(id: string, data: any, path?: string) {
 
 export async function bulkAssignSubMerchants(data: any[]) {
   try {
-    await apiServer.post('/v1/sub-merchants/bulk-assign', { data })
+    const result = await apiServer.post('/v1/sub-merchants/bulk-assign', { data });
     revalidatePath('/dashboard/submerchants')
-    return { success: true }
+    return { success: true, data: result.data }
   } catch (error: any) {
     console.error('Failed bulk sub-merchant assignment:', error)
     return { success: false, message: error.message || 'Failed bulk assignment' }
@@ -40,10 +40,10 @@ export async function bulkAssignSubMerchants(data: any[]) {
 
 export async function bulkAssignSubMerchantByUserId(userId: string, data: any[]) {
   try {
-    await apiServer.post('/v1/sub-merchants/bulk-assign-user', { user_id: userId, data })
+    const result = await apiServer.post('/v1/sub-merchants/bulk-assign-user', { user_id: userId, data })
     revalidatePath('/dashboard/submerchants')
     revalidatePath(`/dashboard/users/${userId}`)
-    return { success: true }
+    return { success: true, data: result.data }
   } catch (error: any) {
     console.error('Failed bulk sub-merchant assignment by user id:', error)
     return { success: false, message: error.message || 'Failed bulk assignment' }
