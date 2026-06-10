@@ -83,7 +83,7 @@ export default function UserSubMerchantTable({
   useEffect(() => {
     setIsNavigating(false)
     setSearchInput(currentSearch)
-  }, [currentPage, currentSearch, currentLimit, currentSearch])
+  }, [currentPage, currentSearch, currentLimit])
 
   const buildUrl = useCallback(
     (overrides: Record<string, string | number | undefined>) => {

@@ -25,7 +25,7 @@ export default async function UserDetailPage({ params, searchParams }: PageProps
   let error: string | null = null
   let userData: UserDetailResponse | null = null
 
-  // Initiate QRIS and Sub-Merchants requests immediately without awaiting them
+  // Kick off all secondary fetches in parallel immediately — none awaited yet
   const qrisSummaryPromise = apiServer
     .get<QrisSummaryResponse>(`/v1/users/${id}/qris-summary`)
     .then((res) => res.data.data)
