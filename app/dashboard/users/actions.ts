@@ -1,0 +1,76 @@
+'use server'
+
+import { apiServer } from '@/libs/api-server.lib'
+import { DailyReport } from '@/types/user.type'
+import { ApiResponse, PaginationMeta } from '@/types/api.type'
+
+export interface FetchDailyReportsResult {
+  success: boolean
+  data: DailyReport[]
+  meta: PaginationMeta | null
+  message?: string
+}
+
+export interface FetchDownloadUrlResult {
+  success: boolean
+  url?: string
+  message?: string
+}
+
+export async function fetchUserDailyReports(
+  userId: string,
+  startDate: string,
+  endDate: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<FetchDailyReportsResult> {
+  try {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      page: page.toString(),
+      start_date: startDate,
+      end_date: endDate,
+    })
+
+    const response = await apiServer.get<ApiResponse<DailyReport[]>>(
+      `/v1/users/${userId}/daily-reports?${params.toString()}`
+    )
+
+    return {
+      success: true,
+      data: response.data.data || [],
+      meta: response.data.meta || null,
+    }
+  } catch (error: any) {
+    console.error('Failed to fetch daily reports:', error)
+    return {
+      success: false,
+      data: [],
+      meta: null,
+      message: error.message || 'Failed to fetch daily reports',
+    }
+  }
+}
+
+export async function fetchDownloadUrl(
+  downloadJobId: string
+): Promise<FetchDownloadUrlResult> {
+  try {
+    const response = await apiServer.get<ApiResponse<{ url: string }>>(
+      `/v1/utils/downloads/${downloadJobId}/url`
+    )
+
+    const url = response.data.data?.url
+    if (!url) {
+      return { success: false, message: 'Download URL not available' }
+    }
+
+    return { success: true, url }
+  } catch (error: any) {
+    console.error('Failed to fetch download URL:', error)
+    return {
+      success: false,
+      message: error.message || 'Failed to get download URL',
+    }
+  }
+}

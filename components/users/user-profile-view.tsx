@@ -11,6 +11,7 @@ import {
   Activity,
   CheckCircle2,
   Percent,
+  FileText,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,6 +25,7 @@ import { Store, FileUp } from 'lucide-react'
 import AssignSubMerchantModal from './assign-sub-merchant-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserBulkAssignModal from './user-bulk-assign-modal'
+import UserDailyReportsModal from './user-daily-reports-modal'
 import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
@@ -168,6 +170,7 @@ interface UserProfileViewProps {
 export default function UserProfileView({ user, qrisSummaryPromise }: UserProfileViewProps) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [isDailyReportsOpen, setIsDailyReportsOpen] = useState(false)
   const router = useRouter()
 
   return (
@@ -191,6 +194,11 @@ export default function UserProfileView({ user, qrisSummaryPromise }: UserProfil
         onSuccess={() => {
           router.refresh()
         }}
+      />
+      <UserDailyReportsModal
+        userId={user.id}
+        isOpen={isDailyReportsOpen}
+        onClose={() => setIsDailyReportsOpen(false)}
       />
 
       {/* ── Top row: Profile + Quick contact ── */}
@@ -232,6 +240,14 @@ export default function UserProfileView({ user, qrisSummaryPromise }: UserProfil
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    onClick={() => setIsDailyReportsOpen(true)}
+                    variant="outline"
+                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Daily Reports
+                  </Button>
                   <Button
                     onClick={() => setIsAssignModalOpen(true)}
                     className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 px-6 h-11"

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { apiServer } from '@/libs/api-server.lib'
 import { UserDetailResponse, QrisSummaryResponse } from '@/types/user.type'
+import { SubMerchantListResponse } from '@/types/sub-merchant.type'
 import { Button } from '@/components/ui/button'
 import UserProfileView from '@/components/users/user-profile-view'
 
@@ -12,7 +13,8 @@ interface PageProps {
 
 export default async function UserDetailPage({ params }: PageProps) {
   const { id } = await params
-  
+
+  // Fetch user detail first (required)
   let userData: UserDetailResponse | null = null
   let error: string | null = null
 
@@ -27,7 +29,11 @@ export default async function UserDetailPage({ params }: PageProps) {
     error = e.message || 'Failed to load user details'
   }
 
-  // Initiate QRIS summary fetch in parallel without awaiting it
+  if (!userData?.data && !error) {
+    notFound()
+  }
+
+  // Kick off all secondary fetches in parallel immediately — none awaited yet
   const qrisSummaryPromise = apiServer
     .get<QrisSummaryResponse>(`/v1/users/${id}/qris-summary`)
     .then(res => res.data.data)
@@ -36,8 +42,19 @@ export default async function UserDetailPage({ params }: PageProps) {
       return null
     })
 
-  if (!userData?.data && !error) {
-    notFound()
+  const subMerchantsPromise = apiServer
+    .get<SubMerchantListResponse>(`/v1/users/${id}/sub-merchants?limit=100`)
+    .then(res => res.data.data || [])
+    .catch(e => {
+      console.error('Failed to fetch sub-merchants:', e)
+      return []
+    })
+
+  // Await only what's needed for SSR render; qrisSummaryPromise streams via Suspense
+  const [subMerchants] = await Promise.all([subMerchantsPromise])
+
+  if (userData?.data) {
+    userData.data.sub_merchants = subMerchants
   }
 
   return (
@@ -59,11 +76,6 @@ export default async function UserDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-
-        {/* <div className="flex gap-2">
-          <Button variant="outline" size="sm">Edit Profile</Button>
-          <Button size="sm">Take Action</Button>
-        </div> */}
       </div>
 
       {error ? (
@@ -75,20 +87,13 @@ export default async function UserDetailPage({ params }: PageProps) {
             <p className="font-bold">Error Loading Profile</p>
             <p className="text-sm opacity-80">{error}</p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="ml-auto border-destructive/50 hover:bg-destructive/10"
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </Button>
         </div>
       ) : userData?.data ? (
-        <UserProfileView user={userData.data} qrisSummaryPromise={qrisSummaryPromise} />
+        <UserProfileView
+          user={userData.data}
+          qrisSummaryPromise={qrisSummaryPromise}
+        />
       ) : null}
     </div>
   )
 }
-
-
