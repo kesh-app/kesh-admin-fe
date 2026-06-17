@@ -2,51 +2,74 @@ import { ArrowLeft, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { apiServer } from '@/libs/api-server.lib'
-import { UserDetailResponse, QrisSummaryResponse } from '@/types/user.type'
-import { Button } from '@/components/ui/button'
+import {
+  UserDetailResponse,
+  QrisSummaryResponse,
+  UserSubMerchantsResponse,
+} from '@/types/user.type'
 import UserProfileView from '@/components/users/user-profile-view'
 
 interface PageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-export default async function UserDetailPage({ params }: PageProps) {
+export default async function UserDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params
-  
-  let userData: UserDetailResponse | null = null
+  const sp = await searchParams
+
+  const smPage = Number(sp.smPage) || 1
+  const smSearch = (sp.smSearch as string) || ''
+  const smLimit = Number(sp.smLimit) || 10
+
   let error: string | null = null
+  let userData: UserDetailResponse | null = null
 
-  try {
-    const response = await apiServer.get<UserDetailResponse>(`/v1/users/${id}`)
-    userData = response.data
-  } catch (e: any) {
-    console.error('Failed to fetch user details:', e)
-    if (e.response?.status === 404) {
-      notFound()
-    }
-    error = e.message || 'Failed to load user details'
-  }
-
-  // Initiate QRIS summary fetch in parallel without awaiting it
+  // Kick off all secondary fetches in parallel immediately — none awaited yet
   const qrisSummaryPromise = apiServer
     .get<QrisSummaryResponse>(`/v1/users/${id}/qris-summary`)
-    .then(res => res.data.data)
-    .catch(e => {
+    .then((res) => res.data.data)
+    .catch((e) => {
       console.error('Failed to fetch QRIS summary:', e)
       return null
     })
 
-  if (!userData?.data && !error) {
-    notFound()
+  const subMerchantsPromise = apiServer
+    .get<UserSubMerchantsResponse>(`/v1/users/${id}/sub-merchants`, {
+      params: {
+        page: smPage,
+        limit: smLimit,
+        search: smSearch || undefined,
+      },
+    })
+    .then((res) => ({
+      data: res.data.data,
+      meta: res.data.meta ?? null,
+    }))
+    .catch((e) => {
+      console.error('Failed to fetch sub-merchants:', e)
+      return null
+    })
+
+  // We only await the user details to render the main layout
+  try {
+    const userResult = await apiServer.get<UserDetailResponse>(`/v1/users/${id}`)
+    userData = userResult.data
+  } catch (e: any) {
+    console.error('Failed to fetch user details:', e)
+    if (e.response?.status === 404) notFound()
+    error = e.message || 'Failed to load user details'
   }
+
+  if (!userData?.data && !error) notFound()
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Dynamic Breadcrumbs/Back Button */}
+      {/* Breadcrumb / Back Button */}
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-2">
-          <Link 
-            href="/dashboard/users" 
+          <Link
+            href="/dashboard/users"
             className="flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors group"
           >
             <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -59,11 +82,6 @@ export default async function UserDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
-
-        {/* <div className="flex gap-2">
-          <Button variant="outline" size="sm">Edit Profile</Button>
-          <Button size="sm">Take Action</Button>
-        </div> */}
       </div>
 
       {error ? (
@@ -75,20 +93,17 @@ export default async function UserDetailPage({ params }: PageProps) {
             <p className="font-bold">Error Loading Profile</p>
             <p className="text-sm opacity-80">{error}</p>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="ml-auto border-destructive/50 hover:bg-destructive/10"
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </Button>
         </div>
       ) : userData?.data ? (
-        <UserProfileView user={userData.data} qrisSummaryPromise={qrisSummaryPromise} />
+        <UserProfileView
+          user={userData.data}
+          qrisSummaryPromise={qrisSummaryPromise}
+          subMerchantsPromise={subMerchantsPromise}
+          smPage={smPage}
+          smSearch={smSearch}
+          smLimit={smLimit}
+        />
       ) : null}
     </div>
   )
 }
-
-

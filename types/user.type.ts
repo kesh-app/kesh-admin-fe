@@ -16,6 +16,7 @@ export interface KYB {
   company_name: string;
   store_name: string;
   account_number: string;
+  bank_code: string | null;
   company_tax_id: string;
   company_address: string;
   pic_name: string;
@@ -47,14 +48,11 @@ export interface ProjectSecret {
   api_key: string;
   api_secret: string;
   is_status: boolean;
+  can_qris: boolean;
+  can_disburse: boolean;
   created_at: string;
   updated_at: string;
   user_id: string;
-  acquirer_id: string;
-  disburse_acquirer_rtol_id: string;
-  disburse_acquirer_bifast_id: string;
-  disburse_acquirer_intrabank_id: string;
-  acquirer?: Acquirer | null;
 }
 
 
@@ -74,11 +72,12 @@ export interface User {
   updated_at: string;
   kyb?: KYB | null;
   project_secret?: ProjectSecret | null;
-  sub_merchants?: SubMerchant[];
 }
 
 export type UserListResponse = ApiResponse<User[]>;
 export type UserDetailResponse = ApiResponse<User>;
+
+export type UserSubMerchantsResponse = ApiResponse<SubMerchant[]>;
 
 export interface QrisSummary {
   current_balance: string;
@@ -89,4 +88,23 @@ export interface QrisSummary {
 }
 
 export type QrisSummaryResponse = ApiResponse<QrisSummary>;
+
+export interface DailyReport {
+  id: string;
+  user_id: string;
+  download_job_id: string;
+  report_date: string;
+  business_name: string;
+  total_tx: number;
+  success_tx: number;
+  pending_tx: number;
+  failed_tx: number;
+  total_gmv: string;
+  success_gmv: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type DailyReportResponse = ApiResponse<DailyReport[]>;
+
 
