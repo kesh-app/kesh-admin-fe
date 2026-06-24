@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { MoreHorizontal, Eye, EyeOff } from 'lucide-react'
-import { format } from 'date-fns'
+import { ClientDate } from '@/components/client-date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -137,8 +137,8 @@ export default function SubmerchantTable({ submerchants, revalidatePath, hideAcq
                   </TableCell>
                 )}
 
-                <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {item?.created_at ? format(new Date(item.created_at), 'dd MMM yyyy') : '-'}
+                <TableCell className="text-muted-foreground">
+                  <ClientDate date={item?.created_at} format="dd MMM yyyy" />
                 </TableCell>
 
                 <TableCell className="text-right">

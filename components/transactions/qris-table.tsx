@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { QrisTransaction, QrisPaymentStatus } from '@/types/qris.type'
 import { Eye } from 'lucide-react'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { ClientDate } from '@/components/client-date'
 
 interface QrisTableProps {
   transactions: QrisTransaction[]
@@ -59,7 +59,7 @@ export default function QrisTable({ transactions }: QrisTableProps) {
             transactions.map((tx) => (
               <TableRow key={tx.id}>
                 <TableCell className="text-xs">
-                  {format(new Date(tx.createdAt), 'yyyy-MM-dd HH:mm:ss')}
+                  <ClientDate date={tx.createdAt} format="yyyy-MM-dd HH:mm:ss" />
                 </TableCell>
                 <TableCell className="font-medium text-xs">{tx.partnerReferenceNo}</TableCell>
                 <TableCell>
