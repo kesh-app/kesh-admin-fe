@@ -28,6 +28,7 @@ import AssignSubMerchantModal from './assign-sub-merchant-modal'
 import UserBulkAssignModal from './user-bulk-assign-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserDailyReportsModal from './user-daily-reports-modal'
+import UserDisburseReportsModal from './user-disburse-reports-modal'
 import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
@@ -238,6 +239,7 @@ export default function UserProfileView({
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   const [isDailyReportsOpen, setIsDailyReportsOpen] = useState(false)
+  const [isDisburseReportsOpen, setIsDisburseReportsOpen] = useState(false)
   const router = useRouter()
 
   return (
@@ -264,6 +266,11 @@ export default function UserProfileView({
         userId={user.id}
         isOpen={isDailyReportsOpen}
         onClose={() => setIsDailyReportsOpen(false)}
+      />
+      <UserDisburseReportsModal
+        userId={user.id}
+        isOpen={isDisburseReportsOpen}
+        onClose={() => setIsDisburseReportsOpen(false)}
       />
 
       {/* ── Top row: Profile + Quick contact ── */}
@@ -311,7 +318,15 @@ export default function UserProfileView({
                     className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
                   >
                     <FileText className="mr-2 h-4 w-4" />
-                    Daily Reports
+                    QRIS Reports
+                  </Button>
+                  <Button
+                    onClick={() => setIsDisburseReportsOpen(true)}
+                    variant="outline"
+                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Disburse Reports
                   </Button>
                   <Button
                     onClick={() => setIsAssignModalOpen(true)}

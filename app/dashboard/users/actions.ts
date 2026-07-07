@@ -74,3 +74,48 @@ export async function fetchDownloadUrl(
     }
   }
 }
+
+import { DisburseReport } from '@/types/user.type'
+
+export interface FetchDisburseReportsResult {
+  success: boolean
+  data: DisburseReport[]
+  meta: PaginationMeta | null
+  message?: string
+}
+
+export async function fetchUserDisburseReports(
+  userId: string,
+  startDate: string,
+  endDate: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<FetchDisburseReportsResult> {
+  try {
+    const params = new URLSearchParams({
+      user_id: userId,
+      limit: limit.toString(),
+      page: page.toString(),
+      start_date: startDate,
+      end_date: endDate,
+    })
+
+    const response = await apiServer.get<ApiResponse<DisburseReport[]>>(
+      `/v1/report/disburse?${params.toString()}`
+    )
+
+    return {
+      success: true,
+      data: response.data.data || [],
+      meta: response.data.meta || null,
+    }
+  } catch (error: any) {
+    console.error('Failed to fetch disburse reports:', error)
+    return {
+      success: false,
+      data: [],
+      meta: null,
+      message: error.message || 'Failed to fetch disburse reports',
+    }
+  }
+}
