@@ -311,7 +311,7 @@ export default function UserProfileView({
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-wrap sm:justify-end gap-3 mt-4 lg:mt-0">
                   <Button
                     onClick={() => setIsDailyReportsOpen(true)}
                     variant="outline"
