@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { MoreHorizontal } from 'lucide-react'
-import { format } from 'date-fns'
+import { ClientDate } from '@/components/client-date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -74,11 +74,11 @@ export default function UserTable({ users }: UserTableProps) {
                   </Badge>
                 </TableCell>
 
-                <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {user.created_at ? format(new Date(user.created_at), 'dd MMM yyyy') : '-'}
+                <TableCell className="text-muted-foreground">
+                  <ClientDate date={user.created_at} format="dd MMM yyyy" />
                 </TableCell>
-                <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {user.updated_at ? format(new Date(user.updated_at), 'dd MMM yyyy') : '-'}
+                <TableCell className="text-muted-foreground">
+                  <ClientDate date={user.updated_at} format="dd MMM yyyy" />
                 </TableCell>
 
                 <TableCell className="text-right">

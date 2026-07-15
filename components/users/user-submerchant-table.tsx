@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { MoreHorizontal, Eye, EyeOff, Edit, ShieldCheck, ShieldAlert, Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
-import { format } from 'date-fns'
+import { ClientDate } from '@/components/client-date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -306,8 +306,8 @@ export default function UserSubMerchantTable({
                     </Badge>
                   </TableCell>
 
-                  <TableCell className="text-xs text-muted-foreground" suppressHydrationWarning>
-                    {item.created_at ? format(new Date(item.created_at), 'dd MMM yyyy') : '-'}
+                  <TableCell className="text-xs text-muted-foreground">
+                    <ClientDate date={item.created_at} format="dd MMM yyyy" />
                   </TableCell>
 
                   <TableCell className="text-right px-6">

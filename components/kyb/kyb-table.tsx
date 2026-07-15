@@ -1,6 +1,6 @@
 'use client'
 import { MoreHorizontal, FileText } from 'lucide-react'
-import { format } from 'date-fns'
+import { ClientDate } from '@/components/client-date'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
@@ -58,7 +58,7 @@ export default function KYBTable({ data }: KYBTableProps) {
                   <KYBStatusBadge status={item.status} />
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {item.submitted_at ? format(new Date(item.submitted_at), 'dd MMM yyyy HH:mm') : format(new Date(item.created_at), 'dd MMM yyyy HH:mm')}
+                  <ClientDate date={item.submitted_at || item.created_at} format="dd MMM yyyy HH:mm" />
                 </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>

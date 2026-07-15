@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { MoreHorizontal } from 'lucide-react'
-import { format } from 'date-fns'
+import { ClientDate } from '@/components/client-date'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -81,12 +81,12 @@ export default function DisburseAcquirerTable({ disburseAcquirers }: DisburseAcq
                   {acquirer.source_account_no}
                 </TableCell>
 
-                <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {acquirer.created_at ? format(new Date(acquirer.created_at), 'dd MMM yyyy') : '-'}
+                <TableCell className="text-muted-foreground">
+                  <ClientDate date={acquirer.created_at} format="dd MMM yyyy" />
                 </TableCell>
 
-                <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {acquirer.updated_at ? format(new Date(acquirer.updated_at), 'dd MMM yyyy') : '-'}
+                <TableCell className="text-muted-foreground">
+                  <ClientDate date={acquirer.updated_at} format="dd MMM yyyy" />
                 </TableCell>
 
                 <TableCell className="text-right">

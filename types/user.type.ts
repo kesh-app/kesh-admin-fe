@@ -107,4 +107,20 @@ export interface DailyReport {
 
 export type DailyReportResponse = ApiResponse<DailyReport[]>;
 
+export interface DisburseReport {
+  id: string;
+  reportDate: string;
+  businessName: string;
+  totalTx: number;
+  successTx: number;
+  pendingTx: number;
+  failedTx: number;
+  totalDebit: number;
+  totalCredit: number;
+  beginningBalance: number;
+  endingBalance: number;
+  downloadId: string;
+  createdAt: string;
+}
 
+export type DisburseReportResponse = ApiResponse<DisburseReport[]>;

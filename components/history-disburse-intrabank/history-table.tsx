@@ -92,8 +92,8 @@ export default function HistoryTable({ events }: HistoryTableProps) {
                   )}
                 </TableCell>
 
-                <TableCell className="text-muted-foreground text-xs" suppressHydrationWarning>
-                  {event.createdAt ? format(new Date(event.createdAt), 'dd MMM yyyy HH:mm') : '-'}
+                <TableCell className="text-muted-foreground text-xs">
+                  {isMounted && event.createdAt ? format(new Date(event.createdAt), 'dd MMM yyyy HH:mm') : '-'}
                 </TableCell>
 
                 <TableCell className="text-right">

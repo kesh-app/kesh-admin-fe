@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MoreHorizontal } from 'lucide-react'
-import { format } from 'date-fns'
+import { ClientDate } from '@/components/client-date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -94,11 +94,11 @@ export default function AcquirerTable({ acquirers }: AcquirerTableProps) {
                   {acquirer.total_sub_merchants}
                 </TableCell>
 
-                <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {acquirer.created_at ? format(new Date(acquirer.created_at), 'dd MMM yyyy') : '-'}
+                <TableCell className="text-muted-foreground">
+                  <ClientDate date={acquirer.created_at} format="dd MMM yyyy" />
                 </TableCell>
-                <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                  {acquirer.updated_at ? format(new Date(acquirer.updated_at), 'dd MMM yyyy') : '-'}
+                <TableCell className="text-muted-foreground">
+                  <ClientDate date={acquirer.updated_at} format="dd MMM yyyy" />
                 </TableCell>
 
                 <TableCell className="text-right">
