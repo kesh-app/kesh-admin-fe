@@ -16,70 +16,72 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { DisburseAcquirer } from '@/types/disburse-acquirer.type'
-import { createDisburseAcquirer, updateDisburseAcquirer } from '@/app/dashboard/disburse-acquirers/actions'
+import { Switch } from '@/components/ui/switch'
+import { VaAcquirer } from '@/types/va-acquirer.type'
+import { createVaAcquirer, updateVaAcquirer } from '@/app/dashboard/va-acquirers/actions'
 import { Eye, EyeOff } from 'lucide-react'
 
-import { Switch } from '@/components/ui/switch'
-
-const getDisburseAcquirerSchema = (isEdit: boolean) => {
+const getVaAcquirerSchema = (isEdit: boolean) => {
   const requiredString = z.string().min(1, 'Required')
   const optionalString = z.string().optional().or(z.literal(''))
-  
+
   return z.object({
     name: isEdit ? optionalString : requiredString,
-    type: isEdit ? optionalString : requiredString,
-    merchant_id: isEdit ? optionalString : requiredString,
+    provider: isEdit ? optionalString : requiredString,
+    service_type: isEdit ? optionalString : requiredString,
     client_id: isEdit ? optionalString : requiredString,
     secret_id: isEdit ? optionalString : requiredString,
     partner_id: isEdit ? optionalString : requiredString,
+    merchant_id: isEdit ? optionalString : requiredString,
     private_key: isEdit ? optionalString : requiredString,
+    public_key: optionalString,
     endpoint: isEdit 
       ? z.string().url('Invalid endpoint URL').optional().or(z.literal(''))
       : z.string().url('Invalid endpoint URL'),
+    partner_service_id: isEdit ? optionalString : requiredString,
     source_account_no: isEdit ? optionalString : requiredString,
     source_bank_code: isEdit ? optionalString : requiredString,
-    fee_amount: isEdit 
-      ? z.union([z.coerce.number().min(0, 'Must be at least 0'), z.literal('')]).optional().transform(v => v === '' || v === undefined ? undefined : Number(v))
-      : z.coerce.number().min(0, 'Must be at least 0'),
     is_status: z.boolean(),
   })
 }
 
-type DisburseAcquirerFormValues = z.infer<ReturnType<typeof getDisburseAcquirerSchema>>
+type VaAcquirerFormValues = z.infer<ReturnType<typeof getVaAcquirerSchema>>
 
-interface DisburseAcquirerFormProps {
+interface VaAcquirerFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  disburseAcquirer?: DisburseAcquirer | null
+  vaAcquirer?: VaAcquirer | null
 }
 
-export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcquirer }: DisburseAcquirerFormProps) {
+export default function VaAcquirerForm({ open, onOpenChange, vaAcquirer }: VaAcquirerFormProps) {
   const [isLoading, setIsLoading] = useState(false)
-  const isEdit = !!disburseAcquirer
+  const isEdit = !!vaAcquirer
 
   const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>({
     client_id: false,
     secret_id: false,
     partner_id: false,
     private_key: false,
+    public_key: false,
   })
 
-  const formSchema = getDisburseAcquirerSchema(isEdit)
-  const form = useForm<DisburseAcquirerFormValues>({
+  const formSchema = getVaAcquirerSchema(isEdit)
+  const form = useForm<VaAcquirerFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      type: '',
-      merchant_id: '',
+      provider: '',
+      service_type: '',
       client_id: '',
       secret_id: '',
       partner_id: '',
+      merchant_id: '',
       private_key: '',
+      public_key: '',
       endpoint: '',
+      partner_service_id: '',
       source_account_no: '',
       source_bank_code: '',
-      fee_amount: '',
       is_status: true,
     },
   })
@@ -87,38 +89,40 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
   useEffect(() => {
     if (open) {
       form.reset({
-        name: disburseAcquirer?.name || '',
-        type: disburseAcquirer?.type || '',
-        merchant_id: disburseAcquirer?.merchant_id || '',
-        client_id: disburseAcquirer?.client_id || '',
-        secret_id: disburseAcquirer?.secret_id || '',
-        partner_id: disburseAcquirer?.partner_id || '',
-        private_key: disburseAcquirer?.private_key || '',
-        endpoint: disburseAcquirer?.endpoint || '',
-        source_account_no: disburseAcquirer?.source_account_no || '',
-        source_bank_code: disburseAcquirer?.source_bank_code || '',
-        fee_amount: disburseAcquirer?.fee_amount?.toString() || '',
-        is_status: disburseAcquirer?.is_status ?? true,
+        name: vaAcquirer?.name || '',
+        provider: vaAcquirer?.provider || '',
+        service_type: vaAcquirer?.service_type || '',
+        client_id: vaAcquirer?.client_id || '',
+        secret_id: vaAcquirer?.secret_id || '',
+        partner_id: vaAcquirer?.partner_id || '',
+        merchant_id: vaAcquirer?.merchant_id || '',
+        private_key: vaAcquirer?.private_key || '',
+        public_key: vaAcquirer?.public_key || '',
+        endpoint: vaAcquirer?.endpoint || '',
+        partner_service_id: vaAcquirer?.partner_service_id || '',
+        source_account_no: vaAcquirer?.source_account_no || '',
+        source_bank_code: vaAcquirer?.source_bank_code || '',
+        is_status: vaAcquirer?.is_status ?? true,
       })
     }
-  }, [open, disburseAcquirer, form])
+  }, [open, vaAcquirer, form])
 
   const toggleVisibility = (field: string) => {
     setShowSensitive((prev) => ({ ...prev, [field]: !prev[field] }))
   }
 
-  const onSubmit = async (values: DisburseAcquirerFormValues) => {
+  const onSubmit = async (values: VaAcquirerFormValues) => {
     setIsLoading(true)
     try {
       let result
-      if (isEdit && disburseAcquirer) {
-        result = await updateDisburseAcquirer(disburseAcquirer.id, values)
+      if (isEdit && vaAcquirer) {
+        result = await updateVaAcquirer(vaAcquirer.id, values)
       } else {
-        result = await createDisburseAcquirer(values as import('@/types/disburse-acquirer.type').CreateDisburseAcquirerRequest)
+        result = await createVaAcquirer(values as import('@/types/va-acquirer.type').CreateVaAcquirerRequest)
       }
 
       if (result.success) {
-        toast.success(isEdit ? 'Disburse acquirer updated successfully' : 'Disburse acquirer created successfully')
+        toast.success(isEdit ? 'VA acquirer updated successfully' : 'VA acquirer created successfully')
         onOpenChange(false)
         form.reset()
       } else {
@@ -133,7 +137,7 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
 
   const FormField = ({ label, name, isSensitive = false, placeholder = '', type = 'input' }: {
     label: string,
-    name: keyof DisburseAcquirerFormValues,
+    name: keyof VaAcquirerFormValues,
     isSensitive?: boolean,
     placeholder?: string,
     type?: 'input' | 'textarea'
@@ -182,30 +186,33 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Edit Disburse Acquirer' : 'Add New Disburse Acquirer'}</DialogTitle>
+          <DialogTitle>{isEdit ? 'Edit VA Acquirer' : 'Add New VA Acquirer'}</DialogTitle>
           <DialogDescription>
             {isEdit
-              ? 'Update the details for this disburse acquirer.'
-              : 'Enter the details for the new disburse acquirer integration.'}
+              ? 'Update the details for this VA acquirer.'
+              : 'Enter the details for the new VA acquirer integration.'}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4" autoComplete="off">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField label="Name" name="name" placeholder="e.g. NOBU_RTOL" />
-            <FormField label="Type" name="type" placeholder="e.g. NOBU" />
-            <FormField label="Merchant ID" name="merchant_id" placeholder="e.g. 936005030000081984" />
-            <FormField label="Endpoint" name="endpoint" placeholder="https://sandbox-api.nobubank.com" />
+            <FormField label="Name" name="name" placeholder="e.g. NOBU_VA_CASHOUT" />
+            <FormField label="Provider" name="provider" placeholder="e.g. NOBU" />
+            <FormField label="Service Type" name="service_type" placeholder="e.g. CASH_OUT" />
+            <FormField label="Merchant ID" name="merchant_id" placeholder="Merchant ID" />
+            
             <FormField label="Client ID" name="client_id" isSensitive placeholder="Client ID" />
             <FormField label="Secret ID" name="secret_id" isSensitive placeholder="Secret ID" />
             <FormField label="Partner ID" name="partner_id" isSensitive placeholder="Partner ID" />
-            <FormField label="Source Account No" name="source_account_no" placeholder="e.g. 1234567890" />
-            <FormField label="Source Bank Code" name="source_bank_code" placeholder="e.g. 002" />
-            <FormField label="Fee Amount" name="fee_amount" placeholder="e.g. 2500" />
+            <FormField label="Endpoint" name="endpoint" placeholder="https://sandbox-api.nobubank.com" />
             
-            <div className="space-y-2 col-span-1 md:col-span-2">
+            <FormField label="Partner Service ID" name="partner_service_id" placeholder="e.g. 088899" />
+            <FormField label="Source Account No" name="source_account_no" placeholder="e.g. 10110889307" />
+            <FormField label="Source Bank Code" name="source_bank_code" placeholder="e.g. 002" />
+
+            <div className="space-y-2 flex items-center md:col-span-2 pt-2">
               <div className="flex items-center space-x-2">
                 <Switch
                   id="is_status"
@@ -217,13 +224,22 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
             </div>
           </div>
 
-          <FormField
-            label="Private Key"
-            name="private_key"
-            type="textarea"
-            isSensitive
-            placeholder="-----BEGIN PRIVATE KEY-----..."
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              label="Private Key"
+              name="private_key"
+              type="textarea"
+              isSensitive
+              placeholder="-----BEGIN PRIVATE KEY-----..."
+            />
+            <FormField
+              label="Public Key"
+              name="public_key"
+              type="textarea"
+              isSensitive
+              placeholder="-----BEGIN PUBLIC KEY-----..."
+            />
+          </div>
 
           <DialogFooter className="pt-4">
             <Button
@@ -235,7 +251,7 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : isEdit ? 'Update Disburse Acquirer' : 'Add Disburse Acquirer'}
+              {isLoading ? 'Saving...' : isEdit ? 'Update VA Acquirer' : 'Add VA Acquirer'}
             </Button>
           </DialogFooter>
         </form>

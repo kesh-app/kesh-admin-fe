@@ -35,3 +35,14 @@ export async function updateDisburseAcquirer(id: string, data: UpdateDisburseAcq
     return { success: false, message: error.message || 'Failed to update disburse acquirer' }
   }
 }
+
+export async function updateDisburseAcquirerStatus(id: string, is_status: boolean) {
+  try {
+    await apiServer.patch(`/v1/disburse-acquirers/${id}/status`, { is_status })
+    revalidatePath('/dashboard/disburse-acquirers')
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed to update disburse acquirer status:', error)
+    return { success: false, message: error.message || 'Failed to update status' }
+  }
+}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { MoreHorizontal } from 'lucide-react'
 import { ClientDate } from '@/components/client-date'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -21,24 +22,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { toast } from 'sonner'
-import { DisburseAcquirer } from '@/types/disburse-acquirer.type'
-import { getDisburseAcquirerById, updateDisburseAcquirerStatus } from '@/app/dashboard/disburse-acquirers/actions'
-import { Switch } from '@/components/ui/switch'
-import DisburseAcquirerForm from './disburse-acquirer-form'
+import { VaAcquirer } from '@/types/va-acquirer.type'
+import { getVaAcquirerById, updateVaAcquirerStatus } from '@/app/dashboard/va-acquirers/actions'
+import VaAcquirerForm from './va-acquirer-form'
+import AddVaAcquirerButton from './add-va-acquirer-button'
 
-interface DisburseAcquirerTableProps {
-  disburseAcquirers: DisburseAcquirer[]
+interface VaAcquirerTableProps {
+  vaAcquirers: VaAcquirer[]
 }
 
-export default function DisburseAcquirerTable({ disburseAcquirers }: DisburseAcquirerTableProps) {
+export default function VaAcquirerTable({ vaAcquirers }: VaAcquirerTableProps) {
   const [isMounted, setIsMounted] = useState(false)
-  const [editingAcquirer, setEditingAcquirer] = useState<DisburseAcquirer | null>(null)
+  const [editingAcquirer, setEditingAcquirer] = useState<VaAcquirer | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
-  const handleEdit = async (acquirer: DisburseAcquirer) => {
-    toast.loading('Fetching details...', { id: 'fetch-disburse-acquirer' })
-    const result = await getDisburseAcquirerById(acquirer.id)
-    toast.dismiss('fetch-disburse-acquirer')
+  const handleEdit = async (acquirer: VaAcquirer) => {
+    toast.loading('Fetching details...', { id: 'fetch-va-acquirer' })
+    const result = await getVaAcquirerById(acquirer.id)
+    toast.dismiss('fetch-va-acquirer')
 
     if (result.success && result.data) {
       setEditingAcquirer(result.data)
@@ -48,9 +49,9 @@ export default function DisburseAcquirerTable({ disburseAcquirers }: DisburseAcq
     }
   }
 
-  const handleStatusChange = async (acquirer: DisburseAcquirer, newStatus: boolean) => {
+  const handleStatusChange = async (acquirer: VaAcquirer, newStatus: boolean) => {
     toast.loading('Updating status...', { id: `status-${acquirer.id}` })
-    const result = await updateDisburseAcquirerStatus(acquirer.id, newStatus)
+    const result = await updateVaAcquirerStatus(acquirer.id, newStatus)
     
     if (result.success) {
       toast.success('Status updated successfully', { id: `status-${acquirer.id}` })
@@ -65,43 +66,41 @@ export default function DisburseAcquirerTable({ disburseAcquirers }: DisburseAcq
 
   return (
     <div className="border rounded-lg overflow-hidden bg-background">
+      <div className="p-4 border-b flex justify-between items-center bg-card">
+        <h2 className="text-lg font-semibold">VA Acquirers List</h2>
+        <AddVaAcquirerButton />
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Source Account No</TableHead>
+            <TableHead>Provider</TableHead>
+            <TableHead>Service Type</TableHead>
             <TableHead>Bank Code</TableHead>
-            <TableHead>Fee Amount</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created At</TableHead>
-            <TableHead>Updated At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {disburseAcquirers.length > 0 ? (
-            disburseAcquirers.map((acquirer) => (
+          {vaAcquirers.length > 0 ? (
+            vaAcquirers.map((acquirer) => (
               <TableRow key={acquirer.id}>
                 <TableCell className="font-medium">
                   {acquirer.name}
                 </TableCell>
 
                 <TableCell className="text-muted-foreground">
-                  {acquirer.type}
+                  {acquirer.provider}
                 </TableCell>
 
-                <TableCell className="text-muted-foreground font-mono text-xs">
-                  {acquirer.source_account_no}
+                <TableCell className="text-muted-foreground">
+                  {acquirer.service_type}
                 </TableCell>
-
+                
                 <TableCell className="text-muted-foreground font-mono text-xs">
                   {acquirer.source_bank_code || '-'}
-                </TableCell>
-
-                <TableCell className="text-muted-foreground font-mono text-xs">
-                  {acquirer.fee_amount || '-'}
                 </TableCell>
 
                 <TableCell>
@@ -114,10 +113,6 @@ export default function DisburseAcquirerTable({ disburseAcquirers }: DisburseAcq
 
                 <TableCell className="text-muted-foreground">
                   <ClientDate date={acquirer.created_at} format="dd MMM yyyy" />
-                </TableCell>
-
-                <TableCell className="text-muted-foreground">
-                  <ClientDate date={acquirer.updated_at} format="dd MMM yyyy" />
                 </TableCell>
 
                 <TableCell className="text-right">
@@ -148,20 +143,23 @@ export default function DisburseAcquirerTable({ disburseAcquirers }: DisburseAcq
           ) : (
             <TableRow>
               <TableCell
-                colSpan={9}
+                colSpan={7}
                 className="text-center text-muted-foreground py-8"
               >
-                No disburse acquirers found
+                No VA acquirers found
               </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
 
-      <DisburseAcquirerForm
+      <VaAcquirerForm
         open={isFormOpen}
-        onOpenChange={setIsFormOpen}
-        disburseAcquirer={editingAcquirer}
+        onOpenChange={(open) => {
+          setIsFormOpen(open)
+          if (!open) setEditingAcquirer(null)
+        }}
+        vaAcquirer={editingAcquirer}
       />
     </div>
   )
