@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Wallet, AlertCircle, Loader2 } from 'lucide-react'
+import { Wallet, Loader2 } from 'lucide-react'
 import { updateUserBalance } from '@/app/dashboard/users/actions'
 import { UpdateBalancePayload } from '@/types/user.type'
 import { toast } from 'sonner'
@@ -55,16 +55,11 @@ export default function UserUpdateBalanceModal({
       return
     }
 
-    if (!reason.trim()) {
-      toast.error('Alasan harus diisi')
-      return
-    }
-
     startTransition(async () => {
       const payload: UpdateBalancePayload = {
         fund_type: fundType,
         amount: amountNumber,
-        reason: reason.trim(),
+        reason: reason.trim() || undefined,
       }
 
       const result = await updateUserBalance(userId, payload)

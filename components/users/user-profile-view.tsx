@@ -12,10 +12,11 @@ import {
   CheckCircle2,
   Percent,
   FileText,
+  Landmark,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { User, QrisSummary, BalanceHistory } from '@/types/user.type'
+import { User, QrisSummary } from '@/types/user.type'
 import { SubMerchant } from '@/types/sub-merchant.type'
 import { PaginationMeta } from '@/types/api.type'
 import { format } from 'date-fns'
@@ -29,8 +30,8 @@ import UserBulkAssignModal from './user-bulk-assign-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserDailyReportsModal from './user-daily-reports-modal'
 import UserDisburseReportsModal from './user-disburse-reports-modal'
-import UserUpdateBalanceModal from './user-update-balance-modal'
-import UserBalanceHistoryTable from './user-balance-history-table'
+import UserBalanceDetailModal from './user-balance-detail-modal'
+import UserVABalanceDetailModal from './user-va-balance-detail-modal'
 import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
@@ -218,64 +219,7 @@ function SubMerchantSkeleton({ limit }: { limit: number }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Balance History Resolver
-// ---------------------------------------------------------------------------
-function BalanceHistoryResolver({
-  promise,
-  userId,
-  bhPage,
-  bhLimit,
-  bhStartDate,
-  bhEndDate,
-}: {
-  promise: Promise<{ data: BalanceHistory[]; meta: PaginationMeta | null } | null>
-  userId: string
-  bhPage: number
-  bhLimit: number
-  bhStartDate: string
-  bhEndDate: string
-}) {
-  const result = use(promise)
 
-  return (
-    <UserBalanceHistoryTable
-      histories={result?.data || []}
-      historiesMeta={result?.meta || null}
-      userId={userId}
-      currentPage={bhPage}
-      currentLimit={bhLimit}
-      currentStartDate={bhStartDate}
-      currentEndDate={bhEndDate}
-    />
-  )
-}
-
-function BalanceHistorySkeleton() {
-  return (
-    <div className="space-y-4 pt-4">
-      <div className="flex items-center justify-between px-1">
-        <div className="space-y-1">
-          <div className="h-7 w-48 rounded-lg bg-muted animate-pulse" />
-          <div className="h-4 w-72 rounded bg-muted/70 animate-pulse" />
-        </div>
-      </div>
-      <div className="border-none shadow-2xl rounded-2xl overflow-hidden bg-card">
-        <div className="w-full h-12 bg-primary/2 border-b border-primary/10" />
-        <div className="divide-y">
-          {Array.from({ length: 5 }).map((_, i) => (
-             <div key={i} className="flex gap-4 p-4">
-                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
-                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
-                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
-                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
-             </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
 
 // ---------------------------------------------------------------------------
 // Main exported component
@@ -287,11 +231,6 @@ interface UserProfileViewProps {
   smPage: number
   smSearch: string
   smLimit: number
-  balanceHistoriesPromise: Promise<{ data: BalanceHistory[]; meta: PaginationMeta | null } | null>
-  bhPage: number
-  bhLimit: number
-  bhStartDate: string
-  bhEndDate: string
 }
 
 export default function UserProfileView({
@@ -301,17 +240,13 @@ export default function UserProfileView({
   smPage,
   smSearch,
   smLimit,
-  balanceHistoriesPromise,
-  bhPage,
-  bhLimit,
-  bhStartDate,
-  bhEndDate,
 }: UserProfileViewProps) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   const [isDailyReportsOpen, setIsDailyReportsOpen] = useState(false)
   const [isDisburseReportsOpen, setIsDisburseReportsOpen] = useState(false)
-  const [isUpdateBalanceOpen, setIsUpdateBalanceOpen] = useState(false)
+  const [isBalanceDetailOpen, setIsBalanceDetailOpen] = useState(false)
+  const [isVABalanceDetailOpen, setIsVABalanceDetailOpen] = useState(false)
   const router = useRouter()
 
   return (
@@ -344,11 +279,17 @@ export default function UserProfileView({
         isOpen={isDisburseReportsOpen}
         onClose={() => setIsDisburseReportsOpen(false)}
       />
-      <UserUpdateBalanceModal
+      <UserBalanceDetailModal
         userId={user.id}
         currentBalance={parseFloat(user.balance || '0')}
-        isOpen={isUpdateBalanceOpen}
-        onClose={() => setIsUpdateBalanceOpen(false)}
+        isOpen={isBalanceDetailOpen}
+        onClose={() => setIsBalanceDetailOpen(false)}
+      />
+      <UserVABalanceDetailModal
+        userId={user.id}
+        vaBalances={user.va_balances || null}
+        isOpen={isVABalanceDetailOpen}
+        onClose={() => setIsVABalanceDetailOpen(false)}
       />
 
       {/* ── Top row: Profile + Quick contact ── */}
@@ -356,15 +297,15 @@ export default function UserProfileView({
         {/* Profile Summary Card */}
         <Card className="md:col-span-2 overflow-hidden border-none shadow-xl bg-linear-to-br from-card to-card/50">
           <CardContent className="p-0">
-            <div className="h-20 bg-primary/5 relative border-b border-primary/10">
-              <div className="absolute -bottom-8 left-8">
-                <div className="h-20 w-20 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-2xl border-4 border-background transform transition-transform hover:scale-105 duration-300">
-                  <UserIcon className="h-10 w-10" />
+            <div className="h-14 bg-primary/5 relative border-b border-primary/10">
+              <div className="absolute -bottom-7 left-6">
+                <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-2xl border-4 border-background transform transition-transform hover:scale-105 duration-300">
+                  <UserIcon className="h-8 w-8" />
                 </div>
               </div>
             </div>
-            <div className="pt-12 pb-8 px-8">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="pt-10 pb-5 px-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h2 className="text-3xl font-black tracking-tight">
                     {user.name || user.business_name || 'Anonymous'}
@@ -373,7 +314,7 @@ export default function UserProfileView({
                     <span className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
                     USER-ID: {user.id}
                   </p>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex gap-2 mt-2">
                     <Badge
                       variant={user.is_active ? 'success' : 'secondary'}
                       className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider"
@@ -389,11 +330,11 @@ export default function UserProfileView({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap sm:justify-end gap-3 mt-4 lg:mt-0">
+                <div className="flex flex-wrap sm:justify-end gap-2 mt-2 lg:mt-0">
                   <Button
                     onClick={() => setIsDailyReportsOpen(true)}
                     variant="outline"
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
+                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-4 h-9 hover:text-primary/80 text-sm"
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     QRIS Reports
@@ -401,7 +342,7 @@ export default function UserProfileView({
                   <Button
                     onClick={() => setIsDisburseReportsOpen(true)}
                     variant="outline"
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
+                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-4 h-9 hover:text-primary/80 text-sm"
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Disburse Reports
@@ -414,8 +355,8 @@ export default function UserProfileView({
 
         {/* Quick Contact Card */}
         <Card className="border-none shadow-xl bg-card overflow-hidden">
-          <CardContent className="p-6 h-full flex flex-col justify-between gap-4">
-            <div className="space-y-4">
+          <CardContent className="p-5 h-full flex flex-col justify-between gap-3">
+            <div className="space-y-2">
               <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors group">
                 <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                   <Mail className="h-4 w-4" />
@@ -458,10 +399,30 @@ export default function UserProfileView({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setIsUpdateBalanceOpen(true)}
+                onClick={() => setIsBalanceDetailOpen(true)}
                 className="h-8 px-3 border-primary/20 hover:bg-primary/10 text-primary font-bold shadow-sm"
               >
-                Update
+                Detail
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-4 p-3 rounded-2xl bg-violet-500/5 border border-violet-500/10 group">
+              <div className="p-3 rounded-xl bg-violet-600 text-white group-hover:scale-110 transition-transform shadow-lg shadow-violet-500/20">
+                <Landmark className="h-5 w-5" />
+              </div>
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <span className="text-[10px] font-black text-violet-500/70 uppercase tracking-widest">VA Balance</span>
+                <span className="text-xl font-black text-violet-600">
+                  Rp {parseFloat(user.va_balances?.available_balance || '0').toLocaleString('id-ID')}
+                </span>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsVABalanceDetailOpen(true)}
+                className="h-8 px-3 border-violet-500/20 hover:bg-violet-500/10 text-violet-600 font-bold shadow-sm"
+              >
+                Detail
               </Button>
             </div>
           </CardContent>
@@ -503,19 +464,7 @@ export default function UserProfileView({
         </Suspense>
       </div>
 
-      {/* ── Balance History Section ── */}
-      <div className="w-full">
-        <Suspense fallback={<BalanceHistorySkeleton />}>
-          <BalanceHistoryResolver
-            promise={balanceHistoriesPromise}
-            userId={user.id}
-            bhPage={bhPage}
-            bhLimit={bhLimit}
-            bhStartDate={bhStartDate}
-            bhEndDate={bhEndDate}
-          />
-        </Suspense>
-      </div>
+
 
       {/* ── Bottom Grid: Credentials & Business Verification ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">

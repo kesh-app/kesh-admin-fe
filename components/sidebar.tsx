@@ -15,6 +15,7 @@ import {
   CreditCard,
   Banknote,
   History,
+  Landmark,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { Button } from "@/components/ui/button";
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Transactions", href: "/dashboard/transactions", icon: CreditCard },
+  { name: "VA Transactions", href: "/dashboard/va-transactions", icon: Landmark },
   { name: "Users", href: "/dashboard/users", icon: Users },
   { name: "KYB Management", href: "/dashboard/kyb", icon: ShieldCheck },
   { name: "Acquirers", href: "/dashboard/acquirers", icon: Building2 },

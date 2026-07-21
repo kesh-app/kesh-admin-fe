@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { FileText, Search, X, ChevronLeft, ChevronRight, CalendarRange, Clock, TrendingDown, TrendingUp } from 'lucide-react'
+import { Search, X, ChevronLeft, ChevronRight, CalendarRange, Clock, TrendingDown, TrendingUp } from 'lucide-react'
 import { ClientDate } from '@/components/client-date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -42,7 +42,6 @@ function SkeletonRow() {
 export default function UserBalanceHistoryTable({
   histories,
   historiesMeta,
-  userId,
   currentPage,
   currentLimit,
   currentStartDate,

@@ -148,5 +148,11 @@ export type BalanceHistoryResponse = ApiResponse<BalanceHistory[]>;
 export interface UpdateBalancePayload {
   fund_type: 'DEBIT' | 'CREDIT';
   amount: number;
-  reason: string;
+  reason?: string;
+}
+
+export interface UpdateVABalancePayload {
+  fund_type: 'DEBIT' | 'CREDIT';
+  amount: number;
+  reason?: string;
 }
