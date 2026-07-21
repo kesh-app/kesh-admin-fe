@@ -124,3 +124,22 @@ export interface DisburseReport {
 }
 
 export type DisburseReportResponse = ApiResponse<DisburseReport[]>;
+
+export interface BalanceHistory {
+  id: string;
+  description: string;
+  debit: number;
+  credit: number;
+  beginningBalance: number;
+  endingBalance: number;
+  status: string;
+  createdAt: string;
+}
+
+export type BalanceHistoryResponse = ApiResponse<BalanceHistory[]>;
+
+export interface UpdateBalancePayload {
+  fund_type: 'DEBIT' | 'CREDIT';
+  amount: number;
+  reason: string;
+}

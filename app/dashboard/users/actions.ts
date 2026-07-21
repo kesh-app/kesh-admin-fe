@@ -119,3 +119,60 @@ export async function fetchUserDisburseReports(
     }
   }
 }
+
+import { UpdateBalancePayload, BalanceHistory } from '@/types/user.type'
+
+export async function updateUserBalance(userId: string, payload: UpdateBalancePayload) {
+  try {
+    const response = await apiServer.patch(`/v1/balance/users/${userId}`, payload)
+    return { success: true, message: response.data.message || 'Balance updated successfully' }
+  } catch (error: any) {
+    console.error('Failed to update balance:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Failed to update balance',
+    }
+  }
+}
+
+export interface FetchBalanceHistoryResult {
+  success: boolean
+  data: BalanceHistory[]
+  meta: PaginationMeta | null
+  message?: string
+}
+
+export async function fetchUserBalanceHistories(
+  userId: string,
+  startDate: string,
+  endDate: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<FetchBalanceHistoryResult> {
+  try {
+    const params = new URLSearchParams({
+      limit: limit.toString(),
+      page: page.toString(),
+      start_date: startDate,
+      end_date: endDate,
+    })
+
+    const response = await apiServer.get<ApiResponse<BalanceHistory[]>>(
+      `/v1/balance/users/${userId}/histories?${params.toString()}`
+    )
+
+    return {
+      success: true,
+      data: response.data.data || [],
+      meta: response.data.meta || null,
+    }
+  } catch (error: any) {
+    console.error('Failed to fetch balance histories:', error)
+    return {
+      success: false,
+      data: [],
+      meta: null,
+      message: error.response?.data?.message || error.message || 'Failed to fetch balance histories',
+    }
+  }
+}

@@ -6,6 +6,7 @@ import {
   UserDetailResponse,
   QrisSummaryResponse,
   UserSubMerchantsResponse,
+  BalanceHistoryResponse,
 } from '@/types/user.type'
 import UserProfileView from '@/components/users/user-profile-view'
 
@@ -21,6 +22,11 @@ export default async function UserDetailPage({ params, searchParams }: PageProps
   const smPage = Number(sp.smPage) || 1
   const smSearch = (sp.smSearch as string) || ''
   const smLimit = Number(sp.smLimit) || 10
+
+  const bhPage = Number(sp.bhPage) || 1
+  const bhLimit = Number(sp.bhLimit) || 10
+  const bhStartDate = (sp.start_date as string) || ''
+  const bhEndDate = (sp.end_date as string) || ''
 
   let error: string | null = null
   let userData: UserDetailResponse | null = null
@@ -48,6 +54,24 @@ export default async function UserDetailPage({ params, searchParams }: PageProps
     }))
     .catch((e) => {
       console.error('Failed to fetch sub-merchants:', e)
+      return null
+    })
+
+  const balanceHistoriesPromise = apiServer
+    .get<BalanceHistoryResponse>(`/v1/balance/users/${id}/histories`, {
+      params: {
+        page: bhPage,
+        limit: bhLimit,
+        start_date: bhStartDate || undefined,
+        end_date: bhEndDate || undefined,
+      },
+    })
+    .then((res) => ({
+      data: res.data.data,
+      meta: res.data.meta ?? null,
+    }))
+    .catch((e) => {
+      console.error('Failed to fetch balance histories:', e)
       return null
     })
 
@@ -102,6 +126,11 @@ export default async function UserDetailPage({ params, searchParams }: PageProps
           smPage={smPage}
           smSearch={smSearch}
           smLimit={smLimit}
+          balanceHistoriesPromise={balanceHistoriesPromise}
+          bhPage={bhPage}
+          bhLimit={bhLimit}
+          bhStartDate={bhStartDate}
+          bhEndDate={bhEndDate}
         />
       ) : null}
     </div>

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { User, QrisSummary } from '@/types/user.type'
+import { User, QrisSummary, BalanceHistory } from '@/types/user.type'
 import { SubMerchant } from '@/types/sub-merchant.type'
 import { PaginationMeta } from '@/types/api.type'
 import { format } from 'date-fns'
@@ -29,6 +29,8 @@ import UserBulkAssignModal from './user-bulk-assign-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserDailyReportsModal from './user-daily-reports-modal'
 import UserDisburseReportsModal from './user-disburse-reports-modal'
+import UserUpdateBalanceModal from './user-update-balance-modal'
+import UserBalanceHistoryTable from './user-balance-history-table'
 import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
@@ -217,6 +219,65 @@ function SubMerchantSkeleton({ limit }: { limit: number }) {
 }
 
 // ---------------------------------------------------------------------------
+// Balance History Resolver
+// ---------------------------------------------------------------------------
+function BalanceHistoryResolver({
+  promise,
+  userId,
+  bhPage,
+  bhLimit,
+  bhStartDate,
+  bhEndDate,
+}: {
+  promise: Promise<{ data: BalanceHistory[]; meta: PaginationMeta | null } | null>
+  userId: string
+  bhPage: number
+  bhLimit: number
+  bhStartDate: string
+  bhEndDate: string
+}) {
+  const result = use(promise)
+
+  return (
+    <UserBalanceHistoryTable
+      histories={result?.data || []}
+      historiesMeta={result?.meta || null}
+      userId={userId}
+      currentPage={bhPage}
+      currentLimit={bhLimit}
+      currentStartDate={bhStartDate}
+      currentEndDate={bhEndDate}
+    />
+  )
+}
+
+function BalanceHistorySkeleton() {
+  return (
+    <div className="space-y-4 pt-4">
+      <div className="flex items-center justify-between px-1">
+        <div className="space-y-1">
+          <div className="h-7 w-48 rounded-lg bg-muted animate-pulse" />
+          <div className="h-4 w-72 rounded bg-muted/70 animate-pulse" />
+        </div>
+      </div>
+      <div className="border-none shadow-2xl rounded-2xl overflow-hidden bg-card">
+        <div className="w-full h-12 bg-primary/2 border-b border-primary/10" />
+        <div className="divide-y">
+          {Array.from({ length: 5 }).map((_, i) => (
+             <div key={i} className="flex gap-4 p-4">
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+                <div className="h-4 w-1/4 rounded bg-muted animate-pulse" />
+             </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main exported component
 // ---------------------------------------------------------------------------
 interface UserProfileViewProps {
@@ -226,6 +287,11 @@ interface UserProfileViewProps {
   smPage: number
   smSearch: string
   smLimit: number
+  balanceHistoriesPromise: Promise<{ data: BalanceHistory[]; meta: PaginationMeta | null } | null>
+  bhPage: number
+  bhLimit: number
+  bhStartDate: string
+  bhEndDate: string
 }
 
 export default function UserProfileView({
@@ -235,11 +301,17 @@ export default function UserProfileView({
   smPage,
   smSearch,
   smLimit,
+  balanceHistoriesPromise,
+  bhPage,
+  bhLimit,
+  bhStartDate,
+  bhEndDate,
 }: UserProfileViewProps) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false)
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   const [isDailyReportsOpen, setIsDailyReportsOpen] = useState(false)
   const [isDisburseReportsOpen, setIsDisburseReportsOpen] = useState(false)
+  const [isUpdateBalanceOpen, setIsUpdateBalanceOpen] = useState(false)
   const router = useRouter()
 
   return (
@@ -271,6 +343,12 @@ export default function UserProfileView({
         userId={user.id}
         isOpen={isDisburseReportsOpen}
         onClose={() => setIsDisburseReportsOpen(false)}
+      />
+      <UserUpdateBalanceModal
+        userId={user.id}
+        currentBalance={parseFloat(user.balance || '0')}
+        isOpen={isUpdateBalanceOpen}
+        onClose={() => setIsUpdateBalanceOpen(false)}
       />
 
       {/* ── Top row: Profile + Quick contact ── */}
@@ -328,21 +406,6 @@ export default function UserProfileView({
                     <FileText className="mr-2 h-4 w-4" />
                     Disburse Reports
                   </Button>
-                  <Button
-                    onClick={() => setIsAssignModalOpen(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 px-6 h-11"
-                  >
-                    <Store className="mr-2 h-4 w-4" />
-                    Add SMID
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsBulkModalOpen(true)}
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
-                  >
-                    <FileUp className="mr-2 h-4 w-4" />
-                    Bulk Add
-                  </Button>
                 </div>
               </div>
             </div>
@@ -386,12 +449,20 @@ export default function UserProfileView({
               <div className="p-3 rounded-xl bg-primary text-primary-foreground group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
                 <Wallet className="h-5 w-5" />
               </div>
-              <div className="flex flex-col overflow-hidden">
+              <div className="flex flex-col flex-1 overflow-hidden">
                 <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">Balance</span>
                 <span className="text-xl font-black text-primary">
                   Rp {parseFloat(user.balance || '0').toLocaleString('id-ID')}
                 </span>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsUpdateBalanceOpen(true)}
+                className="h-8 px-3 border-primary/20 hover:bg-primary/10 text-primary font-bold shadow-sm"
+              >
+                Update
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -404,6 +475,23 @@ export default function UserProfileView({
 
       {/* ── Sub-Merchant Section ── */}
       <div className="w-full">
+        <div className="flex justify-end gap-3 mb-4">
+          <Button
+            onClick={() => setIsAssignModalOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md shadow-primary/20 transition-all active:scale-95 h-9 px-4 text-sm"
+          >
+            <Store className="mr-2 h-4 w-4" />
+            Add SMID
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsBulkModalOpen(true)}
+            className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 h-9 px-4 text-sm"
+          >
+            <FileUp className="mr-2 h-4 w-4" />
+            Bulk Add
+          </Button>
+        </div>
         <Suspense fallback={<SubMerchantSkeleton limit={smLimit} />}>
           <SubMerchantsResolver
             promise={subMerchantsPromise}
@@ -411,6 +499,20 @@ export default function UserProfileView({
             smPage={smPage}
             smSearch={smSearch}
             smLimit={smLimit}
+          />
+        </Suspense>
+      </div>
+
+      {/* ── Balance History Section ── */}
+      <div className="w-full">
+        <Suspense fallback={<BalanceHistorySkeleton />}>
+          <BalanceHistoryResolver
+            promise={balanceHistoriesPromise}
+            userId={user.id}
+            bhPage={bhPage}
+            bhLimit={bhLimit}
+            bhStartDate={bhStartDate}
+            bhEndDate={bhEndDate}
           />
         </Suspense>
       </div>
