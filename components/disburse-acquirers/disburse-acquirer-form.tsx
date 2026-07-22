@@ -67,7 +67,7 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
 
   const formSchema = getDisburseAcquirerSchema(isEdit)
   const form = useForm<DisburseAcquirerFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: '',
       type: '',
@@ -79,7 +79,7 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
       endpoint: '',
       source_account_no: '',
       source_bank_code: '',
-      fee_amount: '',
+      fee_amount: '' as any,
       is_status: true,
     },
   })
@@ -97,7 +97,7 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
         endpoint: disburseAcquirer?.endpoint || '',
         source_account_no: disburseAcquirer?.source_account_no || '',
         source_bank_code: disburseAcquirer?.source_bank_code || '',
-        fee_amount: disburseAcquirer?.fee_amount?.toString() || '',
+        fee_amount: (disburseAcquirer?.fee_amount?.toString() || '') as any,
         is_status: disburseAcquirer?.is_status ?? true,
       })
     }
