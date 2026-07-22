@@ -159,7 +159,7 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
             {...form.register(name)}
             placeholder={placeholder}
             style={{ WebkitTextSecurity: isSensitive && !showSensitive[name] ? 'disc' : 'none' } as React.CSSProperties}
-            className={`font-mono text-xs min-h-[150px] ${
+            className={`font-mono text-xs min-h-37.5 ${
               form.formState.errors[name] ? 'border-destructive' : ''
             }`}
           />
@@ -182,7 +182,7 @@ export default function DisburseAcquirerForm({ open, onOpenChange, disburseAcqui
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-150 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Disburse Acquirer' : 'Add New Disburse Acquirer'}</DialogTitle>
           <DialogDescription>
