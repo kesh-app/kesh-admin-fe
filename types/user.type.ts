@@ -55,6 +55,12 @@ export interface ProjectSecret {
   user_id: string;
 }
 
+export interface VABalances {
+  available_balance: string;
+  status: string;
+  gateway_code: string;
+}
+
 
 export interface User {
   id: string;
@@ -66,6 +72,7 @@ export interface User {
   provider_id: string | null;
   avatar_url: string | null;
   balance: string;
+  va_balances: VABalances;
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
@@ -124,3 +131,28 @@ export interface DisburseReport {
 }
 
 export type DisburseReportResponse = ApiResponse<DisburseReport[]>;
+
+export interface BalanceHistory {
+  id: string;
+  description: string;
+  debit: number;
+  credit: number;
+  beginningBalance: number;
+  endingBalance: number;
+  status: string;
+  createdAt: string;
+}
+
+export type BalanceHistoryResponse = ApiResponse<BalanceHistory[]>;
+
+export interface UpdateBalancePayload {
+  fund_type: 'DEBIT' | 'CREDIT';
+  amount: number;
+  reason?: string;
+}
+
+export interface UpdateVABalancePayload {
+  fund_type: 'DEBIT' | 'CREDIT';
+  amount: number;
+  reason?: string;
+}

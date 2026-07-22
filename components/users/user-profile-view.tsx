@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Percent,
   FileText,
+  Landmark,
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +30,8 @@ import UserBulkAssignModal from './user-bulk-assign-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserDailyReportsModal from './user-daily-reports-modal'
 import UserDisburseReportsModal from './user-disburse-reports-modal'
+import UserBalanceDetailModal from './user-balance-detail-modal'
+import UserVABalanceDetailModal from './user-va-balance-detail-modal'
 import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
@@ -216,6 +219,8 @@ function SubMerchantSkeleton({ limit }: { limit: number }) {
   )
 }
 
+
+
 // ---------------------------------------------------------------------------
 // Main exported component
 // ---------------------------------------------------------------------------
@@ -240,6 +245,8 @@ export default function UserProfileView({
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   const [isDailyReportsOpen, setIsDailyReportsOpen] = useState(false)
   const [isDisburseReportsOpen, setIsDisburseReportsOpen] = useState(false)
+  const [isBalanceDetailOpen, setIsBalanceDetailOpen] = useState(false)
+  const [isVABalanceDetailOpen, setIsVABalanceDetailOpen] = useState(false)
   const router = useRouter()
 
   return (
@@ -272,21 +279,33 @@ export default function UserProfileView({
         isOpen={isDisburseReportsOpen}
         onClose={() => setIsDisburseReportsOpen(false)}
       />
+      <UserBalanceDetailModal
+        userId={user.id}
+        currentBalance={parseFloat(user.balance || '0')}
+        isOpen={isBalanceDetailOpen}
+        onClose={() => setIsBalanceDetailOpen(false)}
+      />
+      <UserVABalanceDetailModal
+        userId={user.id}
+        vaBalances={user.va_balances || null}
+        isOpen={isVABalanceDetailOpen}
+        onClose={() => setIsVABalanceDetailOpen(false)}
+      />
 
       {/* ── Top row: Profile + Quick contact ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Profile Summary Card */}
         <Card className="md:col-span-2 overflow-hidden border-none shadow-xl bg-linear-to-br from-card to-card/50">
           <CardContent className="p-0">
-            <div className="h-20 bg-primary/5 relative border-b border-primary/10">
-              <div className="absolute -bottom-8 left-8">
-                <div className="h-20 w-20 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-2xl border-4 border-background transform transition-transform hover:scale-105 duration-300">
-                  <UserIcon className="h-10 w-10" />
+            <div className="h-14 bg-primary/5 relative border-b border-primary/10">
+              <div className="absolute -bottom-7 left-6">
+                <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-2xl border-4 border-background transform transition-transform hover:scale-105 duration-300">
+                  <UserIcon className="h-8 w-8" />
                 </div>
               </div>
             </div>
-            <div className="pt-12 pb-8 px-8">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="pt-10 pb-5 px-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h2 className="text-3xl font-black tracking-tight">
                     {user.name || user.business_name || 'Anonymous'}
@@ -295,7 +314,7 @@ export default function UserProfileView({
                     <span className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
                     USER-ID: {user.id}
                   </p>
-                  <div className="flex gap-2 mt-4">
+                  <div className="flex gap-2 mt-2">
                     <Badge
                       variant={user.is_active ? 'success' : 'secondary'}
                       className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider"
@@ -311,11 +330,11 @@ export default function UserProfileView({
                   </div>
                 </div>
 
-                <div className="flex flex-wrap sm:justify-end gap-3 mt-4 lg:mt-0">
+                <div className="flex flex-wrap sm:justify-end gap-2 mt-2 lg:mt-0">
                   <Button
                     onClick={() => setIsDailyReportsOpen(true)}
                     variant="outline"
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
+                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-4 h-9 hover:text-primary/80 text-sm"
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     QRIS Reports
@@ -323,25 +342,10 @@ export default function UserProfileView({
                   <Button
                     onClick={() => setIsDisburseReportsOpen(true)}
                     variant="outline"
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
+                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-4 h-9 hover:text-primary/80 text-sm"
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     Disburse Reports
-                  </Button>
-                  <Button
-                    onClick={() => setIsAssignModalOpen(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 transition-all active:scale-95 px-6 h-11"
-                  >
-                    <Store className="mr-2 h-4 w-4" />
-                    Add SMID
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsBulkModalOpen(true)}
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-6 h-11 hover:text-primary/80"
-                  >
-                    <FileUp className="mr-2 h-4 w-4" />
-                    Bulk Add
                   </Button>
                 </div>
               </div>
@@ -351,8 +355,8 @@ export default function UserProfileView({
 
         {/* Quick Contact Card */}
         <Card className="border-none shadow-xl bg-card overflow-hidden">
-          <CardContent className="p-6 h-full flex flex-col justify-between gap-4">
-            <div className="space-y-4">
+          <CardContent className="p-5 h-full flex flex-col justify-between gap-3">
+            <div className="space-y-2">
               <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors group">
                 <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                   <Mail className="h-4 w-4" />
@@ -386,12 +390,40 @@ export default function UserProfileView({
               <div className="p-3 rounded-xl bg-primary text-primary-foreground group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
                 <Wallet className="h-5 w-5" />
               </div>
-              <div className="flex flex-col overflow-hidden">
+              <div className="flex flex-col flex-1 overflow-hidden">
                 <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">Balance</span>
                 <span className="text-xl font-black text-primary">
                   Rp {parseFloat(user.balance || '0').toLocaleString('id-ID')}
                 </span>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsBalanceDetailOpen(true)}
+                className="h-8 px-3 border-primary/20 hover:bg-primary/10 text-primary font-bold shadow-sm"
+              >
+                Detail
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-4 p-3 rounded-2xl bg-violet-500/5 border border-violet-500/10 group">
+              <div className="p-3 rounded-xl bg-violet-600 text-white group-hover:scale-110 transition-transform shadow-lg shadow-violet-500/20">
+                <Landmark className="h-5 w-5" />
+              </div>
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <span className="text-[10px] font-black text-violet-500/70 uppercase tracking-widest">VA Balance</span>
+                <span className="text-xl font-black text-violet-600">
+                  Rp {parseFloat(user.va_balances?.available_balance || '0').toLocaleString('id-ID')}
+                </span>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsVABalanceDetailOpen(true)}
+                className="h-8 px-3 border-violet-500/20 hover:bg-violet-500/10 text-violet-600 font-bold shadow-sm"
+              >
+                Detail
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -404,6 +436,23 @@ export default function UserProfileView({
 
       {/* ── Sub-Merchant Section ── */}
       <div className="w-full">
+        <div className="flex justify-end gap-3 mb-4">
+          <Button
+            onClick={() => setIsAssignModalOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md shadow-primary/20 transition-all active:scale-95 h-9 px-4 text-sm"
+          >
+            <Store className="mr-2 h-4 w-4" />
+            Add SMID
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setIsBulkModalOpen(true)}
+            className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 h-9 px-4 text-sm"
+          >
+            <FileUp className="mr-2 h-4 w-4" />
+            Bulk Add
+          </Button>
+        </div>
         <Suspense fallback={<SubMerchantSkeleton limit={smLimit} />}>
           <SubMerchantsResolver
             promise={subMerchantsPromise}
@@ -414,6 +463,8 @@ export default function UserProfileView({
           />
         </Suspense>
       </div>
+
+
 
       {/* ── Bottom Grid: Credentials & Business Verification ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4">

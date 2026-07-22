@@ -4,6 +4,7 @@ export interface DisburseAcquirer {
   id: string;
   name: string;
   type: string;
+  is_status: boolean;
   merchant_id: string;
   client_id: string;
   secret_id: string;
@@ -11,6 +12,8 @@ export interface DisburseAcquirer {
   private_key: string;
   endpoint: string;
   source_account_no: string;
+  source_bank_code: string;
+  fee_amount: number;
   created_at: string;
   updated_at: string;
 }
@@ -18,6 +21,7 @@ export interface DisburseAcquirer {
 export interface CreateDisburseAcquirerRequest {
   name: string;
   type: string;
+  is_status: boolean;
   merchant_id: string;
   client_id: string;
   secret_id: string;
@@ -25,9 +29,11 @@ export interface CreateDisburseAcquirerRequest {
   private_key: string;
   endpoint: string;
   source_account_no: string;
+  source_bank_code: string;
+  fee_amount: number;
 }
 
-export interface UpdateDisburseAcquirerRequest extends CreateDisburseAcquirerRequest {}
+export type UpdateDisburseAcquirerRequest = Partial<CreateDisburseAcquirerRequest>;
 
 export type DisburseAcquirerListResponse = ApiResponse<DisburseAcquirer[]>;
 export type DisburseAcquirerDetailResponse = ApiResponse<DisburseAcquirer>;
