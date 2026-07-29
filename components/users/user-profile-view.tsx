@@ -30,6 +30,7 @@ import UserBulkAssignModal from './user-bulk-assign-modal'
 import UserSubMerchantTable from './user-submerchant-table'
 import UserDailyReportsModal from './user-daily-reports-modal'
 import UserDisburseReportsModal from './user-disburse-reports-modal'
+import UserVAReportsModal from './user-va-reports-modal'
 import UserBalanceDetailModal from './user-balance-detail-modal'
 import UserVABalanceDetailModal from './user-va-balance-detail-modal'
 import { useRouter } from 'next/navigation'
@@ -245,6 +246,7 @@ export default function UserProfileView({
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
   const [isDailyReportsOpen, setIsDailyReportsOpen] = useState(false)
   const [isDisburseReportsOpen, setIsDisburseReportsOpen] = useState(false)
+  const [isVAReportsOpen, setIsVAReportsOpen] = useState(false)
   const [isBalanceDetailOpen, setIsBalanceDetailOpen] = useState(false)
   const [isVABalanceDetailOpen, setIsVABalanceDetailOpen] = useState(false)
   const router = useRouter()
@@ -279,6 +281,11 @@ export default function UserProfileView({
         isOpen={isDisburseReportsOpen}
         onClose={() => setIsDisburseReportsOpen(false)}
       />
+      <UserVAReportsModal
+        userId={user.id}
+        isOpen={isVAReportsOpen}
+        onClose={() => setIsVAReportsOpen(false)}
+      />
       <UserBalanceDetailModal
         userId={user.id}
         currentBalance={parseFloat(user.balance || '0')}
@@ -292,142 +299,155 @@ export default function UserProfileView({
         onClose={() => setIsVABalanceDetailOpen(false)}
       />
 
-      {/* ── Top row: Profile + Quick contact ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Profile Summary Card */}
-        <Card className="md:col-span-2 overflow-hidden border-none shadow-xl bg-linear-to-br from-card to-card/50">
-          <CardContent className="p-0">
-            <div className="h-14 bg-primary/5 relative border-b border-primary/10">
-              <div className="absolute -bottom-7 left-6">
-                <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground shadow-2xl border-4 border-background transform transition-transform hover:scale-105 duration-300">
-                  <UserIcon className="h-8 w-8" />
-                </div>
+      {/* ── Desktop-Optimized User Profile Card ── */}
+      <Card className="border-none shadow-xl bg-card overflow-hidden">
+        <CardContent className="p-6 md:p-7 space-y-6">
+          {/* Top Row: User Identity + Badges + Report Action Buttons */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-border/40">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 shadow-sm">
+                <UserIcon className="h-7 w-7" />
               </div>
-            </div>
-            <div className="pt-10 pb-5 px-6">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <h2 className="text-3xl font-black tracking-tight">
+              <div className="space-y-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="text-2xl font-black tracking-tight text-foreground">
                     {user.name || user.business_name || 'Anonymous'}
                   </h2>
-                  <p className="text-muted-foreground font-mono text-xs flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-primary/40 animate-pulse" />
-                    USER-ID: {user.id}
-                  </p>
-                  <div className="flex gap-2 mt-2">
+                  <div className="flex items-center gap-2">
                     <Badge
                       variant={user.is_active ? 'success' : 'secondary'}
-                      className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider"
+                      className="rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider"
                     >
                       {user.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                     <Badge
                       variant={user.is_verified ? 'success' : 'outline'}
-                      className="rounded-full px-4 border-none shadow-sm text-[10px] font-bold uppercase tracking-wider"
+                      className="rounded-full px-3 py-0.5 text-xs font-bold uppercase tracking-wider"
                     >
                       {user.is_verified ? 'Verified' : 'Unverified'}
                     </Badge>
                   </div>
                 </div>
-
-                <div className="flex flex-wrap sm:justify-end gap-2 mt-2 lg:mt-0">
-                  <Button
-                    onClick={() => setIsDailyReportsOpen(true)}
-                    variant="outline"
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-4 h-9 hover:text-primary/80 text-sm"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    QRIS Reports
-                  </Button>
-                  <Button
-                    onClick={() => setIsDisburseReportsOpen(true)}
-                    variant="outline"
-                    className="border-primary/20 hover:bg-primary/5 text-primary font-bold shadow-sm transition-all active:scale-95 px-4 h-9 hover:text-primary/80 text-sm"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Disburse Reports
-                  </Button>
-                </div>
+                <p className="text-muted-foreground font-mono text-xs flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  USER-ID: <span className="font-semibold text-foreground">{user.id}</span>
+                </p>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Quick Contact Card */}
-        <Card className="border-none shadow-xl bg-card overflow-hidden">
-          <CardContent className="p-5 h-full flex flex-col justify-between gap-3">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors group">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+            {/* Reports Action Buttons */}
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Button
+                onClick={() => setIsDailyReportsOpen(true)}
+                variant="outline"
+                className="h-10 px-4 text-xs md:text-sm font-bold border-border/60 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all shadow-xs"
+              >
+                <FileText className="mr-2 h-4 w-4 text-primary" />
+                QRIS Reports
+              </Button>
+              <Button
+                onClick={() => setIsDisburseReportsOpen(true)}
+                variant="outline"
+                className="h-10 px-4 text-xs md:text-sm font-bold border-border/60 hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all shadow-xs"
+              >
+                <FileText className="mr-2 h-4 w-4 text-primary" />
+                Disburse Reports
+              </Button>
+              <Button
+                onClick={() => setIsVAReportsOpen(true)}
+                variant="outline"
+                className="h-10 px-4 text-xs md:text-sm font-bold border-border/60 hover:bg-violet-500/10 hover:text-violet-600 hover:border-violet-500/30 transition-all shadow-xs"
+              >
+                <FileText className="mr-2 h-4 w-4 text-violet-600" />
+                VA Reports
+              </Button>
+            </div>
+          </div>
+
+          {/* Bottom Grid: Quick Info & Balances */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+            {/* Contact Information (6 Cols) */}
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/30">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
                   <Mail className="h-4 w-4" />
                 </div>
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Email</span>
-                  <span className="font-semibold truncate text-xs">{user.email}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Email</span>
+                  <span className="font-semibold text-xs md:text-sm truncate leading-tight">{user.email}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors group">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/30">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
                   <Phone className="h-4 w-4" />
                 </div>
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Phone</span>
-                  <span className="font-semibold text-xs">{user.phone || '-'}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Phone</span>
+                  <span className="font-semibold text-xs md:text-sm truncate leading-tight">{user.phone || '-'}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted/50 transition-colors group">
-                <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/30">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
                   <Calendar className="h-4 w-4" />
                 </div>
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Joined</span>
-                  <span className="font-semibold text-xs">{format(new Date(user.created_at), 'MMM d, yyyy')}</span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Joined</span>
+                  <span className="font-semibold text-xs md:text-sm truncate leading-tight">{format(new Date(user.created_at), 'MMM d, yyyy')}</span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 p-3 rounded-2xl bg-primary/5 border border-primary/10 group">
-              <div className="p-3 rounded-xl bg-primary text-primary-foreground group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
-                <Wallet className="h-5 w-5" />
+            {/* Balances Section (6 Cols) */}
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Balance */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2.5 rounded-lg bg-emerald-500/15 text-emerald-600 shrink-0">
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest leading-none mb-1">Balance</span>
+                    <span className="text-sm md:text-base font-black text-emerald-600 truncate leading-tight">
+                      Rp {parseFloat(user.balance || '0').toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsBalanceDetailOpen(true)}
+                  className="h-8 px-3 text-xs font-bold border-emerald-500/20 text-emerald-700 hover:bg-emerald-500/15 hover:text-emerald-800 ml-2 shadow-2xs"
+                >
+                  Detail
+                </Button>
               </div>
-              <div className="flex flex-col flex-1 overflow-hidden">
-                <span className="text-[10px] font-black text-primary/60 uppercase tracking-widest">Balance</span>
-                <span className="text-xl font-black text-primary">
-                  Rp {parseFloat(user.balance || '0').toLocaleString('id-ID')}
-                </span>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsBalanceDetailOpen(true)}
-                className="h-8 px-3 border-primary/20 hover:bg-primary/10 text-primary font-bold shadow-sm"
-              >
-                Detail
-              </Button>
-            </div>
 
-            <div className="flex items-center gap-4 p-3 rounded-2xl bg-violet-500/5 border border-violet-500/10 group">
-              <div className="p-3 rounded-xl bg-violet-600 text-white group-hover:scale-110 transition-transform shadow-lg shadow-violet-500/20">
-                <Landmark className="h-5 w-5" />
+              {/* VA Balance */}
+              <div className="flex items-center justify-between p-3 rounded-xl bg-violet-500/5 border border-violet-500/15">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2.5 rounded-lg bg-violet-500/15 text-violet-600 shrink-0">
+                    <Landmark className="h-5 w-5" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-black text-violet-600/70 uppercase tracking-widest leading-none mb-1">VA Balance</span>
+                    <span className="text-sm md:text-base font-black text-violet-600 truncate leading-tight">
+                      Rp {parseFloat(user.va_balances?.available_balance || '0').toLocaleString('id-ID')}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsVABalanceDetailOpen(true)}
+                  className="h-8 px-3 text-xs font-bold border-violet-500/20 text-violet-700 hover:bg-violet-500/15 hover:text-violet-800 ml-2 shadow-2xs"
+                >
+                  Detail
+                </Button>
               </div>
-              <div className="flex flex-col flex-1 overflow-hidden">
-                <span className="text-[10px] font-black text-violet-500/70 uppercase tracking-widest">VA Balance</span>
-                <span className="text-xl font-black text-violet-600">
-                  Rp {parseFloat(user.va_balances?.available_balance || '0').toLocaleString('id-ID')}
-                </span>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsVABalanceDetailOpen(true)}
-                className="h-8 px-3 border-violet-500/20 hover:bg-violet-500/10 text-violet-600 font-bold shadow-sm"
-              >
-                Detail
-              </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* ── Today's QRIS Summary ── */}
       <Suspense fallback={<QrisSummarySkeleton />}>
