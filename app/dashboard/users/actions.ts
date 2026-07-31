@@ -121,6 +121,51 @@ export async function fetchUserDisburseReports(
   }
 }
 
+import { VaReport } from '@/types/user.type'
+
+export interface FetchVaReportsResult {
+  success: boolean
+  data: VaReport[]
+  meta: PaginationMeta | null
+  message?: string
+}
+
+export async function fetchUserVaReports(
+  userId: string,
+  startDate: string,
+  endDate: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<FetchVaReportsResult> {
+  try {
+    const params = new URLSearchParams({
+      user_id: userId,
+      limit: limit.toString(),
+      page: page.toString(),
+      start_date: startDate,
+      end_date: endDate,
+    })
+
+    const response = await apiServer.get<ApiResponse<VaReport[]>>(
+      `/v1/report/va?${params.toString()}`
+    )
+
+    return {
+      success: true,
+      data: response.data.data || [],
+      meta: response.data.meta || null,
+    }
+  } catch (error: any) {
+    console.error('Failed to fetch VA reports:', error)
+    return {
+      success: false,
+      data: [],
+      meta: null,
+      message: error.message || 'Failed to fetch VA reports',
+    }
+  }
+}
+
 import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory } from '@/types/user.type'
 
 export async function updateUserBalance(userId: string, payload: UpdateBalancePayload) {

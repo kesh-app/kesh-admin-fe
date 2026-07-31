@@ -114,6 +114,24 @@ export interface DailyReport {
 
 export type DailyReportResponse = ApiResponse<DailyReport[]>;
 
+export interface VaReport {
+  id: string;
+  user_id: string;
+  download_job_id: string;
+  report_date: string;
+  business_name: string;
+  total_tx: number;
+  success_tx: number;
+  pending_tx: number;
+  failed_tx: number;
+  total_gmv: string;
+  success_gmv: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type VaReportResponse = ApiResponse<VaReport[]>;
+
 export interface DisburseReport {
   id: string;
   reportDate: string;
