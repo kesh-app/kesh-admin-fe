@@ -99,7 +99,7 @@ export default function UserVABalanceDetailModal({
     startTransition(async () => {
       const payload: UpdateVABalancePayload = {
         fund_type: fundType,
-        amount: Number(amount.trim()),
+        amount: amountNumber.toFixed(2),
         reason: reason.trim() || undefined,
       }
 
