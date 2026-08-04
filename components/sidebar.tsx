@@ -17,6 +17,7 @@ import {
   History,
   Landmark,
   KeyRound,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const navigation = [
   { name: "Disburse Acquirer", href: "/dashboard/disburse-acquirers", icon: Banknote },
   { name: "VA Acquirers", href: "/dashboard/va-acquirers", icon: Landmark },
   { name: "Submerchants", href: "/dashboard/submerchants", icon: ShoppingCart },
+  { name: "Balance Requests", href: "/dashboard/balance-requests", icon: Wallet },
   { name: "History Disburse Intrabank", href: "/dashboard/history-disburse-intrabank", icon: History },
   { name: "Role & Permissions", href: "/dashboard/role-permissions", icon: KeyRound },
 ];
