@@ -11,13 +11,14 @@ export const metadata: Metadata = {
 export default async function VaAcquirersPage({
   searchParams,
 }: {
-  searchParams: { page?: string; limit?: string }
+  searchParams: Promise<{ page?: string; limit?: string }>
 }) {
-  const page = Number(searchParams.page) || 1
-  const limit = Number(searchParams.limit) || 10
+  const params = await searchParams
+  const page = Number(params?.page) || 1
+  const limit = Number(params?.limit) || 10
   
   const result = await getVaAcquirers(page, limit)
-  const vaAcquirers = result.success ? result.data || [] : []
+  const vaAcquirers = result?.success ? result?.data || [] : []
 
   return (
     <div className="space-y-6">
