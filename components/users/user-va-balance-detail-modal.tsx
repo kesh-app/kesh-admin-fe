@@ -21,8 +21,9 @@ import {
   ChevronRight,
   Info,
 } from 'lucide-react'
-import { updateUserVABalance, fetchUserVABalanceHistories } from '@/app/dashboard/users/actions'
-import { UpdateVABalancePayload, BalanceHistory, VABalances } from '@/types/user.type'
+import { updateUserVABalance, fetchUserVABalanceHistories, fetchVABalanceDetail, updateVAProduct } from '@/app/dashboard/users/actions'
+import { UpdateVABalancePayload, BalanceHistory, VABalances, VABalanceDetailData } from '@/types/user.type'
+import { VA_PRODUCT_CODES } from '@/libs/datas/va_product_code.data'
 import { PaginationMeta } from '@/types/api.type'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -56,6 +57,16 @@ export default function UserVABalanceDetailModal({
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
+  const [selectedGateway, setSelectedGateway] = useState<string>('')
+  const [selectedProduct, setSelectedProduct] = useState<string>('')
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false)
+  const [balanceDetail, setBalanceDetail] = useState<VABalanceDetailData | null>(null)
+
+  const [editingProduct, setEditingProduct] = useState<string | null>(null)
+  const [editIsClosed, setEditIsClosed] = useState(false)
+  const [editFeeAmount, setEditFeeAmount] = useState('')
+  const [isUpdatingProduct, startUpdatingProduct] = useTransition()
+
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [histories, setHistories] = useState<BalanceHistory[]>([])
@@ -65,7 +76,8 @@ export default function UserVABalanceDetailModal({
   const [hasSearched, setHasSearched] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
-  const currentBalance = parseFloat(vaBalances?.available_balance || '0')
+  const fallbackBalance = parseFloat(vaBalances?.available_balance || '0')
+
 
   const handleClose = () => {
     setFundType('CREDIT')
@@ -78,8 +90,43 @@ export default function UserVABalanceDetailModal({
     setHistoryError(null)
     setHasSearched(false)
     setCurrentPage(1)
+    setSelectedGateway('')
+    setSelectedProduct('')
+    setBalanceDetail(null)
+    setEditingProduct(null)
     onClose()
   }
+
+  const handleFetchBalanceDetail = async () => {
+    if (!selectedGateway || !selectedProduct) return
+    setIsFetchingDetail(true)
+    const res = await fetchVABalanceDetail(userId, selectedGateway, selectedProduct)
+    if (res.success && res.data) {
+      setBalanceDetail(res.data)
+    } else {
+      toast.error(res.message || 'Failed to fetch balance detail')
+      setBalanceDetail(null)
+    }
+    setIsFetchingDetail(false)
+  }
+
+  const handleUpdateProduct = (code: string) => {
+    startUpdatingProduct(async () => {
+      const res = await updateVAProduct(code, {
+        is_closed_amount: editIsClosed,
+        fee_amount: Number(editFeeAmount),
+      })
+      if (res.success) {
+        toast.success(res.message)
+        setEditingProduct(null)
+        handleFetchBalanceDetail() // refresh the product list
+      } else {
+        toast.error(res.message || 'Failed to update product')
+      }
+    })
+  }
+
+  const currentBalance = balanceDetail ? parseFloat(balanceDetail.availableBalance || '0') : parseFloat(vaBalances?.available_balance || '0')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -169,6 +216,55 @@ export default function UserVABalanceDetailModal({
         </DialogHeader>
 
         <div className="px-6 pb-6 space-y-5">
+          {/* Gateway & Product Selection */}
+          <div className="bg-muted/10 p-4 rounded-xl border border-border/50 space-y-4">
+            <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Pilih Produk VA</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold">Gateway</label>
+                <select
+                  value={selectedGateway}
+                  onChange={(e) => {
+                    setSelectedGateway(e.target.value)
+                    setSelectedProduct('')
+                    setBalanceDetail(null)
+                  }}
+                  className="w-full h-10 px-3 border border-input rounded-md bg-background text-sm"
+                >
+                  <option value="">-- Pilih Gateway --</option>
+                  {VA_PRODUCT_CODES.map((g) => (
+                    <option key={g.gateway_code} value={g.gateway_code}>{g.gateway_code}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold">Product Name</label>
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => setSelectedProduct(e.target.value)}
+                  disabled={!selectedGateway}
+                  className="w-full h-10 px-3 border border-input rounded-md bg-background text-sm disabled:opacity-50"
+                >
+                  <option value="">-- Pilih Product --</option>
+                  {VA_PRODUCT_CODES.find(g => g.gateway_code === selectedGateway)?.data_products.map((p) => (
+                    <option key={p.product_name} value={p.product_name}>{p.product_name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button
+                onClick={handleFetchBalanceDetail}
+                disabled={!selectedGateway || !selectedProduct || isFetchingDetail}
+                size="sm"
+                className="bg-violet-600 hover:bg-violet-700 text-white"
+              >
+                {isFetchingDetail ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+                Get Balance & Products
+              </Button>
+            </div>
+          </div>
+
           {/* Current VA Balance Info */}
           <div className="bg-violet-500/5 px-5 py-4 rounded-xl border border-violet-500/10 space-y-3">
             <div className="flex items-center justify-between">
@@ -180,13 +276,65 @@ export default function UserVABalanceDetailModal({
             <div className="flex items-center gap-4 text-xs text-muted-foreground border-t border-border/40 pt-3">
               <span className="flex items-center gap-1">
                 <Info className="h-3.5 w-3.5" />
-                Gateway: <span className="font-semibold ml-1">{vaBalances?.gateway_code || '-'}</span>
+                Gateway: <span className="font-semibold ml-1">{balanceDetail?.gatewayCode || vaBalances?.gateway_code || '-'}</span>
               </span>
               <span>
-                Status: <Badge variant={vaBalances?.status === 'ACTIVE' ? 'success' : 'secondary'} className="rounded-full text-[10px] font-bold px-2 ml-1">{vaBalances?.status || '-'}</Badge>
+                Status: <Badge variant={balanceDetail?.status === 'ACTIVE' || vaBalances?.status === 'ACTIVE' ? 'success' : 'secondary'} className="rounded-full text-[10px] font-bold px-2 ml-1">{balanceDetail?.status || vaBalances?.status || '-'}</Badge>
               </span>
             </div>
           </div>
+
+          {/* Products List */}
+          {balanceDetail && balanceDetail.products.length > 0 && (
+            <div className="border border-border/50 rounded-xl p-5 space-y-4 overflow-x-auto">
+              <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Daftar Produk VA</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Is Closed Amount</TableHead>
+                    <TableHead>Fee Amount</TableHead>
+                    <TableHead>Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {balanceDetail.products.map((prod) => (
+                    <TableRow key={prod.code}>
+                      <TableCell className="font-mono text-sm">{prod.code}</TableCell>
+                      <TableCell>
+                        {editingProduct === prod.code ? (
+                          <input type="checkbox" checked={editIsClosed} onChange={(e) => setEditIsClosed(e.target.checked)} className="w-4 h-4" />
+                        ) : (
+                          <Badge variant={prod.is_closed_amount ? "default" : "secondary"}>{prod.is_closed_amount ? 'Yes' : 'No'}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingProduct === prod.code ? (
+                          <input type="number" value={editFeeAmount} onChange={(e) => setEditFeeAmount(e.target.value)} className="w-24 h-8 px-2 border rounded-md text-sm" />
+                        ) : (
+                          `Rp ${parseFloat(prod.fee_amount).toLocaleString('id-ID')}`
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingProduct === prod.code ? (
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={() => handleUpdateProduct(prod.code)} disabled={isUpdatingProduct} className="bg-violet-600 hover:bg-violet-700 text-white">Save</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setEditingProduct(null)}>Cancel</Button>
+                          </div>
+                        ) : (
+                          <Button size="sm" variant="outline" onClick={() => {
+                            setEditingProduct(prod.code)
+                            setEditIsClosed(prod.is_closed_amount)
+                            setEditFeeAmount(prod.fee_amount)
+                          }}>Edit</Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
 
           {/* Update Form */}
           <form onSubmit={handleSubmit} className="border border-border/50 rounded-xl p-5 space-y-4">

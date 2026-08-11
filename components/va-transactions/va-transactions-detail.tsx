@@ -79,6 +79,15 @@ export default function VATransactionsDetail({ transaction }: VATransactionsDeta
           </div>
 
           <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Product Code</p>
+            <p className="font-medium text-sm">
+              {transaction.product_code ? (
+                <Badge variant="secondary" className="font-mono text-xs">{transaction.product_code}</Badge>
+              ) : '-'}
+            </p>
+          </div>
+
+          <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Partner Service ID</p>
             <p className="font-medium text-sm">{transaction.partner_service_id}</p>
           </div>

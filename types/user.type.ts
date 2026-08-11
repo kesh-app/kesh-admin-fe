@@ -61,6 +61,28 @@ export interface VABalances {
   gateway_code: string;
 }
 
+export interface VABalanceProduct {
+  id: string;
+  user_id: string;
+  merchant_va_balance_id: string;
+  code: string;
+  is_closed_amount: boolean;
+  fee_amount: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VABalanceDetailData {
+  availableBalance: string;
+  currency: string;
+  gatewayCode: string;
+  productName: string;
+  status: string;
+  products: VABalanceProduct[];
+}
+
+export type VABalanceDetailResponse = ApiResponse<VABalanceDetailData>;
+
 
 export interface User {
   id: string;
