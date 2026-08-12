@@ -24,6 +24,9 @@ export interface VATransaction {
   direction: string;
   status: string;
   sub_type: string;
+  /** Per-product VA balance routing; null on rows created before the product refactor. */
+  product: string | null;
+  product_code: string | null;
   created_at: string;
   updated_at: string;
   events?: VATransactionEvent[];
