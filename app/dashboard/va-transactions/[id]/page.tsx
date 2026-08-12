@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import VATransactionsDetail from '@/components/va-transactions/va-transactions-detail'
 import VATransactionsEvents from '@/components/va-transactions/va-transactions-events'
+import VATransactionDetailActions from '@/components/va-transactions/va-transaction-detail-actions'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -47,7 +48,8 @@ export default async function VATransactionDetailPage({ params }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             <VATransactionsDetail transaction={vaData.data} />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            <VATransactionDetailActions transaction={vaData.data} />
             <VATransactionsEvents events={vaData.data.events} />
           </div>
         </div>
