@@ -193,6 +193,7 @@ export interface UpdateBalancePayload {
 
 export interface UpdateVABalancePayload {
   fund_type: 'DEBIT' | 'CREDIT';
-  amount: number;
+  amount: number | string;
   reason?: string;
+  product_name: string;
 }

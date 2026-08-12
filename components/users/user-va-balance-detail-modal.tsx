@@ -59,6 +59,8 @@ export default function UserVABalanceDetailModal({
 
   const [selectedGateway, setSelectedGateway] = useState<string>('')
   const [selectedProduct, setSelectedProduct] = useState<string>('')
+  const [updateGateway, setUpdateGateway] = useState<string>('')
+  const [updateProduct, setUpdateProduct] = useState<string>('')
   const [isFetchingDetail, setIsFetchingDetail] = useState(false)
   const [balanceDetail, setBalanceDetail] = useState<VABalanceDetailData | null>(null)
 
@@ -92,6 +94,8 @@ export default function UserVABalanceDetailModal({
     setCurrentPage(1)
     setSelectedGateway('')
     setSelectedProduct('')
+    setUpdateGateway('')
+    setUpdateProduct('')
     setBalanceDetail(null)
     setEditingProduct(null)
     setActiveTab('balance')
@@ -132,6 +136,11 @@ export default function UserVABalanceDetailModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!updateGateway || !updateProduct) {
+      toast.error('Gateway dan Product Name harus dipilih')
+      return
+    }
+
     const amountNumber = parseFloat(amount) || 0
 
     if (!amount || amountNumber <= 0) {
@@ -147,8 +156,9 @@ export default function UserVABalanceDetailModal({
     startTransition(async () => {
       const payload: UpdateVABalancePayload = {
         fund_type: fundType,
-        amount: Number(amount.trim()),
+        amount: amount.trim(),
         reason: reason.trim() || undefined,
+        product_name: updateProduct,
       }
 
       const result = await updateUserVABalance(userId, payload)
@@ -381,6 +391,40 @@ export default function UserVABalanceDetailModal({
           {activeTab === 'update' && (
           <form onSubmit={handleSubmit} className="border border-border/50 rounded-xl p-5 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <h3 className="font-bold text-sm text-muted-foreground uppercase tracking-wider">Update VA Balance</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold">Gateway</label>
+                <select
+                  value={updateGateway}
+                  onChange={(e) => {
+                    setUpdateGateway(e.target.value)
+                    setUpdateProduct('')
+                  }}
+                  className="w-full h-10 px-3 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/30 text-sm"
+                  disabled={isPending}
+                >
+                  <option value="">-- Pilih Gateway --</option>
+                  {VA_PRODUCT_CODES.map((g) => (
+                    <option key={g.gateway_code} value={g.gateway_code}>{g.gateway_code}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold">Product Name</label>
+                <select
+                  value={updateProduct}
+                  onChange={(e) => setUpdateProduct(e.target.value)}
+                  disabled={!updateGateway || isPending}
+                  className="w-full h-10 px-3 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-violet-500/30 text-sm disabled:opacity-50"
+                >
+                  <option value="">-- Pilih Product --</option>
+                  {VA_PRODUCT_CODES.find(g => g.gateway_code === updateGateway)?.data_products.map((p) => (
+                    <option key={p.product_name} value={p.product_name}>{p.product_name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
