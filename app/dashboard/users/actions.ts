@@ -278,3 +278,37 @@ export async function fetchUserVABalanceHistories(
     }
   }
 }
+
+import { VABalanceDetailResponse } from '@/types/user.type'
+
+export async function fetchVABalanceDetail(userId: string, gatewayCode: string, productName: string) {
+  try {
+    const params = new URLSearchParams({
+      gateway_code: gatewayCode,
+      product_name: productName,
+    })
+    const response = await apiServer.get<VABalanceDetailResponse>(
+      `/v1/va-balances/user/${userId}?${params.toString()}`
+    )
+    return { success: true, data: response.data.data }
+  } catch (error: any) {
+    console.error('Failed to fetch VA balance detail:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Failed to fetch VA balance detail',
+    }
+  }
+}
+
+export async function updateVAProduct(code: string, payload: { is_closed_amount: boolean; fee_amount: number }) {
+  try {
+    const response = await apiServer.patch(`/v1/admin/va-products/code/${code}`, payload)
+    return { success: true, message: response.data.message || 'Product updated successfully' }
+  } catch (error: any) {
+    console.error('Failed to update VA product:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Failed to update VA product',
+    }
+  }
+}
