@@ -613,17 +613,21 @@ export default function UserVABalanceDetailModal({
               </div>
             )}
 
-            {historiesMeta && historiesMeta.totalPages > 1 && (
+            {(historiesMeta?.totalPages ? historiesMeta.totalPages > 1 : (histories.length === 10 || currentPage > 1)) && (
               <div className="flex items-center justify-between pt-1">
                 <p className="text-xs text-muted-foreground">
-                  Page {historiesMeta.page} of {historiesMeta.totalPages} ({historiesMeta.total} total)
+                  {historiesMeta?.totalPages ? (
+                    `Page ${historiesMeta.page} of ${historiesMeta.totalPages} (${historiesMeta.total} total)`
+                  ) : (
+                    `Page ${currentPage}`
+                  )}
                 </p>
                 <div className="flex items-center gap-1.5">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => fetchHistory(historiesMeta.page - 1)}
-                    disabled={!historiesMeta.hasPrev || isLoadingHistory}
+                    onClick={() => fetchHistory(historiesMeta?.page ? historiesMeta.page - 1 : currentPage - 1)}
+                    disabled={isLoadingHistory || (historiesMeta ? !historiesMeta.hasPrev : currentPage <= 1)}
                     className="h-8 px-3"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -631,8 +635,8 @@ export default function UserVABalanceDetailModal({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => fetchHistory(historiesMeta.page + 1)}
-                    disabled={!historiesMeta.hasNext || isLoadingHistory}
+                    onClick={() => fetchHistory(historiesMeta?.page ? historiesMeta.page + 1 : currentPage + 1)}
+                    disabled={isLoadingHistory || (historiesMeta ? !historiesMeta.hasNext : histories.length < 10)}
                     className="h-8 px-3"
                   >
                     <ChevronRight className="h-4 w-4" />
