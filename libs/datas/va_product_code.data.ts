@@ -38,5 +38,16 @@ export const VA_PRODUCT_CODES: VAProductCodes = [
                 ]
             },
         ]
+    },
+    {
+        gateway_code: "LOKETBAYAR",
+        data_products: [
+            { product_name: "DANA", products: [{ product_code: "DANAPLUS", is_closed_amount: false }] },
+            { product_name: "GOPAY", products: [{ product_code: "GOPAYP", is_closed_amount: false }] },
+            { product_name: "OVO", products: [{ product_code: "OVOPLUSADM", is_closed_amount: false }] },
+            { product_name: "SHOPEPAY", products: [{ product_code: "SHOPEEPLUS", is_closed_amount: false }] },
+            { product_name: "LINKAJA", products: [{ product_code: "LINKP", is_closed_amount: false }] },
+            { product_name: "BIFAST", products: [{ product_code: "TRFBANK", is_closed_amount: false }] },
+        ]
     }
 ]
