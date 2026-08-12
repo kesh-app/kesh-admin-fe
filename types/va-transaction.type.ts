@@ -17,8 +17,6 @@ export interface VATransaction {
   customer_no: string;
   virtual_account_no: string;
   virtual_account_name: string;
-  product: any | null;
-  product_code: string | null;
   payment_request_id: string;
   total_amount: string;
   fee_amount: string;
