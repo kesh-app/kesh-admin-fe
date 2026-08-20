@@ -18,7 +18,7 @@ export const VA_PRODUCT_CODES: VAProductCodes = [
                 ]
             },
             {
-                product_name: "SHOPEPAY",
+                product_name: "SHOPEEPAY",
                 products: [
                     { product_code: "0SPAY00VCR00001", is_closed_amount: true, close_amount: 10000 },
                     { product_code: "0SPAY00VCR00002", is_closed_amount: true, close_amount: 20000 },
