@@ -296,6 +296,14 @@ export default function BalanceRequestTable({ items }: BalanceRequestTableProps)
                     {selectedItem.target_type}
                   </p>
                 </div>
+                {selectedItem.product_name && (
+                  <div>
+                    <p className="text-xs text-muted-foreground font-medium">Product Name</p>
+                    <p className="font-semibold text-foreground mt-0.5">
+                      {selectedItem.product_name}
+                    </p>
+                  </div>
+                )}
                 <div>
                   <p className="text-xs text-muted-foreground font-medium">Amount</p>
                   <p className="font-semibold text-primary text-base mt-0.5">
