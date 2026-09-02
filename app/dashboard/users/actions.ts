@@ -281,11 +281,10 @@ export async function fetchUserVABalanceHistories(
 
 import { VABalanceDetailResponse } from '@/types/user.type'
 
-export async function fetchVABalanceDetail(userId: string, gatewayCode: string, productName: string) {
+export async function fetchVABalanceDetail(userId: string, gatewayCode: string) {
   try {
     const params = new URLSearchParams({
       gateway_code: gatewayCode,
-      product_name: productName,
     })
     const response = await apiServer.get<VABalanceDetailResponse>(
       `/v1/va-balances/user/${userId}?${params.toString()}`

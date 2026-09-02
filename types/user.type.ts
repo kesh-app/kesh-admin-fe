@@ -76,9 +76,7 @@ export interface VABalanceDetailData {
   availableBalance: string;
   currency: string;
   gatewayCode: string;
-  productName: string;
   status: string;
-  products: VABalanceProduct[];
 }
 
 export type VABalanceDetailResponse = ApiResponse<VABalanceDetailData>;
@@ -195,5 +193,5 @@ export interface UpdateVABalancePayload {
   fund_type: 'DEBIT' | 'CREDIT';
   amount: number | string;
   reason?: string;
-  product_name: string;
+  gateway_code: string;
 }
