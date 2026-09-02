@@ -126,7 +126,7 @@ export default function BalanceRequestTable({ items }: BalanceRequestTableProps)
           : `/balance-requests/${selectedItem.id}/reject`;
 
       const response = await apiClient.post(endpoint, {
-        admin_notes: adminNotes.trim() || undefined,
+        admin_notes: adminNotes.trim(),
       });
 
       if (response.data?.success) {

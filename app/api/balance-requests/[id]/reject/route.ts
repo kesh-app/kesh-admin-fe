@@ -12,10 +12,9 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const { admin_notes } = body;
 
-    const payload: { admin_notes?: string } = {};
-    if (admin_notes && typeof admin_notes === "string" && admin_notes.trim()) {
-      payload.admin_notes = admin_notes.trim();
-    }
+    const payload: { admin_notes: string } = {
+      admin_notes: typeof admin_notes === "string" ? admin_notes.trim() : "",
+    };
 
     const response = await apiServer.post(`/v1/balance-requests/${id}/reject`, payload);
 
