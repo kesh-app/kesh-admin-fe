@@ -82,12 +82,6 @@ function QrisSummaryResolver({ promise }: { promise: Promise<QrisSummary | null>
     wide?: boolean
   }> = [
     {
-      label: 'Current Balance',
-      value: `Rp ${parseFloat(qrisSummary?.current_balance || '0').toLocaleString('id-ID')}`,
-      icon: Wallet,
-      color: 'emerald',
-    },
-    {
       label: 'Total Revenue',
       value: `Rp ${parseFloat(qrisSummary?.total_revenue || '0').toLocaleString('id-ID')}`,
       icon: TrendingUp,
@@ -136,7 +130,7 @@ function QrisSummaryResolver({ promise }: { promise: Promise<QrisSummary | null>
             <p className="text-sm font-medium">No summary data available for today</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map(({ label, value, icon: Icon, color, wide }) => (
               <div
                 key={label}

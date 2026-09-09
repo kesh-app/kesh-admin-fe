@@ -109,7 +109,6 @@ export type UserDetailResponse = ApiResponse<User>;
 export type UserSubMerchantsResponse = ApiResponse<SubMerchant[]>;
 
 export interface QrisSummary {
-  current_balance: string;
   total_revenue: string;
   total_transactions: number;
   success_count: number;
