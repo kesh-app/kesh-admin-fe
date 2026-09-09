@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "test": "node --test --test-isolation=none tests/va-product-routing.test.mts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

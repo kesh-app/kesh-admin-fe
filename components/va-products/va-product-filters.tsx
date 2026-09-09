@@ -7,6 +7,7 @@ import { Search, RotateCcw } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { VA_PRODUCT_CODES } from '@/libs/datas/va_product_code.data'
+import { SMART_VA_GENERAL_CODES } from '@/types/va-product.type'
 
 export default function VaProductFilters() {
   const router = useRouter()
@@ -15,6 +16,7 @@ export default function VaProductFilters() {
 
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [provider, setProvider] = useState(searchParams.get('provider') || '')
+  const [generalCode, setGeneralCode] = useState(searchParams.get('general_code') || '')
 
   const providers = VA_PRODUCT_CODES.map((item) => item.gateway_code)
 
@@ -34,6 +36,26 @@ export default function VaProductFilters() {
       params.set('provider', provider)
     } else {
       params.delete('provider')
+    }
+
+    if (generalCode && generalCode !== 'ALL') {
+      params.set('general_code', generalCode)
+    } else {
+      params.delete('general_code')
+    }
+
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleGeneralCodeChange = (newGeneralCode: string) => {
+    setGeneralCode(newGeneralCode)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('page', '1')
+
+    if (newGeneralCode && newGeneralCode !== 'ALL') {
+      params.set('general_code', newGeneralCode)
+    } else {
+      params.delete('general_code')
     }
 
     router.push(`${pathname}?${params.toString()}`)
@@ -56,10 +78,14 @@ export default function VaProductFilters() {
   const handleReset = () => {
     setSearch('')
     setProvider('')
+    setGeneralCode('')
     router.push(pathname)
   }
 
-  const hasFilter = searchParams.has('search') || searchParams.has('provider')
+  const hasFilter =
+    searchParams.has('search') ||
+    searchParams.has('provider') ||
+    searchParams.has('general_code')
 
   return (
     <div className="bg-card p-4 rounded-lg border">
@@ -77,6 +103,24 @@ export default function VaProductFilters() {
               className="pl-9 h-9"
             />
           </div>
+        </div>
+
+        <div className="w-full sm:w-48">
+          <label className="text-xs font-medium text-muted-foreground mb-1 block">
+            General Product
+          </label>
+          <select
+            value={generalCode || 'ALL'}
+            onChange={(event) => handleGeneralCodeChange(event.target.value)}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground"
+          >
+            <option value="ALL">All General Products</option>
+            {SMART_VA_GENERAL_CODES.map((code) => (
+              <option key={code} value={code}>
+                {code}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="w-full sm:w-48">

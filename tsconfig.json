@@ -35,6 +35,7 @@
       ]
     },
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "incremental": true,
     "moduleResolution": "bundler",
     "plugins": [
