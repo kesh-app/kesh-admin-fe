@@ -166,7 +166,7 @@ export async function fetchUserVaReports(
   }
 }
 
-import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory } from '@/types/user.type'
+import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory, VABalanceDetailResponse } from '@/types/user.type'
 
 export async function updateUserBalance(userId: string, payload: UpdateBalancePayload) {
   try {
@@ -205,6 +205,7 @@ export async function fetchUserBalanceHistories(
       page: page.toString(),
       start_date: startDate,
       end_date: endDate,
+      type: 'USER',
     })
 
     const response = await apiServer.get<ApiResponse<BalanceHistory[]>>(
@@ -227,9 +228,29 @@ export async function fetchUserBalanceHistories(
   }
 }
 
+export async function fetchUserBalanceDetail(userId: string, gatewayCode: string) {
+  try {
+    const params = new URLSearchParams({
+      id: userId,
+      type: 'USER',
+      gateway_code: gatewayCode,
+    })
+    const response = await apiServer.get<VABalanceDetailResponse>(
+      `/v1/balance/users/${userId}?${params.toString()}`
+    )
+    return { success: true, data: response.data.data }
+  } catch (error: any) {
+    console.error('Failed to fetch user balance detail:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Failed to fetch user balance detail',
+    }
+  }
+}
+
 export async function updateUserVABalance(userId: string, payload: UpdateVABalancePayload) {
   try {
-    const response = await apiServer.patch(`/v1/va-balances/user/${userId}`, payload)
+    const response = await apiServer.patch(`/v1/balance/users/${userId}`, payload)
     return { success: true, message: response.data.message || 'VA Balance updated successfully' }
   } catch (error: any) {
     console.error('Failed to update VA balance:', error)
@@ -279,15 +300,15 @@ export async function fetchUserVABalanceHistories(
   }
 }
 
-import { VABalanceDetailResponse } from '@/types/user.type'
-
 export async function fetchVABalanceDetail(userId: string, gatewayCode: string) {
   try {
     const params = new URLSearchParams({
+      id: userId,
+      type: 'VA',
       gateway_code: gatewayCode,
     })
     const response = await apiServer.get<VABalanceDetailResponse>(
-      `/v1/va-balances/user/${userId}?${params.toString()}`
+      `/v1/balance/users/${userId}?${params.toString()}`
     )
     return { success: true, data: response.data.data }
   } catch (error: any) {

@@ -73,6 +73,8 @@ export interface VABalanceProduct {
 }
 
 export interface VABalanceDetailData {
+  type?: string;
+  userId?: string;
   availableBalance: string;
   currency: string;
   gatewayCode: string;
@@ -184,14 +186,12 @@ export interface BalanceHistory {
 export type BalanceHistoryResponse = ApiResponse<BalanceHistory[]>;
 
 export interface UpdateBalancePayload {
+  type: 'USER' | 'VA';
+  gateway_code: string;
   fund_type: 'DEBIT' | 'CREDIT';
   amount: number;
   reason?: string;
 }
 
-export interface UpdateVABalancePayload {
-  fund_type: 'DEBIT' | 'CREDIT';
-  amount: number | string;
-  reason?: string;
-  gateway_code: string;
-}
+/** @deprecated use UpdateBalancePayload */
+export type UpdateVABalancePayload = UpdateBalancePayload;

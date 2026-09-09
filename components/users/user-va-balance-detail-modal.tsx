@@ -129,10 +129,11 @@ export default function UserVABalanceDetailModal({
 
     startTransition(async () => {
       const payload: UpdateVABalancePayload = {
-        fund_type: fundType,
-        amount: amountNumber.toFixed(2),
-        reason: reason.trim() || undefined,
+        type: 'VA',
         gateway_code: updateGateway,
+        fund_type: fundType,
+        amount: amountNumber,
+        reason: reason.trim() || undefined,
       }
 
       const result = await updateUserVABalance(userId, payload)

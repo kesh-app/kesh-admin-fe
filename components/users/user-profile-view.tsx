@@ -407,8 +407,8 @@ export default function UserProfileView({
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest leading-none mb-1">Balance</span>
-                    <span className="text-sm md:text-base font-black text-emerald-600 truncate leading-tight">
-                      Rp {parseFloat(user.balance || '0').toLocaleString('id-ID')}
+                    <span className="text-[0.7rem] font-bold text-emerald-600 truncate leading-tight mt-1">
+                      Click detail to view
                     </span>
                   </div>
                 </div>

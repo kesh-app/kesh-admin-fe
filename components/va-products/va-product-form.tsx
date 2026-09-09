@@ -59,7 +59,7 @@ export default function VaProductForm({ open, onOpenChange, vaProduct }: VaProdu
     const gateway = VA_PRODUCT_CODES.find(
       (item) => item.gateway_code.toUpperCase() === selectedProvider.toUpperCase()
     )
-    if (!gateway) return []
+    if (!gateway || !gateway.data_products) return []
     return gateway.data_products.map((dp) => dp.product_name)
   }, [selectedProvider])
 
@@ -76,7 +76,7 @@ export default function VaProductForm({ open, onOpenChange, vaProduct }: VaProdu
       } else {
         form.reset({
           provider: VA_PRODUCT_CODES[0]?.gateway_code || '',
-          product_name: VA_PRODUCT_CODES[0]?.data_products[0]?.product_name || '',
+          product_name: VA_PRODUCT_CODES[0]?.data_products?.[0]?.product_name || '',
           code: '',
           is_closed_amount: false,
           fee_amount: 0,
@@ -92,7 +92,7 @@ export default function VaProductForm({ open, onOpenChange, vaProduct }: VaProdu
     const gateway = VA_PRODUCT_CODES.find(
       (item) => item.gateway_code.toUpperCase() === newProvider.toUpperCase()
     )
-    const firstProduct = gateway?.data_products[0]?.product_name || ''
+    const firstProduct = gateway?.data_products?.[0]?.product_name || ''
     form.setValue('product_name', firstProduct, { shouldValidate: true })
   }
 

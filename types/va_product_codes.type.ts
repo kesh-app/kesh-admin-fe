@@ -9,7 +9,7 @@ type DataProduct = {
 
 type Gateway = {
   gateway_code: string;
-  data_products: DataProduct[];
+  data_products?: DataProduct[];
 };
 
 export type VAProductCodes = Gateway[];
