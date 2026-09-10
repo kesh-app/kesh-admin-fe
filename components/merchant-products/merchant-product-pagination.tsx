@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PaginationMeta } from '@/types/api.type'
 
-interface VaProductPaginationProps {
+interface MerchantProductPaginationProps {
   meta: PaginationMeta
 }
 
-export default function VaProductPagination({ meta }: VaProductPaginationProps) {
+export default function MerchantProductPagination({ meta }: MerchantProductPaginationProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()

@@ -151,14 +151,15 @@ export default function BalanceRequestTable({ items }: BalanceRequestTableProps)
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Req Number</TableHead>
-              <TableHead>Target Type</TableHead>
-              <TableHead>User / Email</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Adj. Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="whitespace-nowrap min-w-[190px]">Req Number</TableHead>
+              <TableHead className="whitespace-nowrap min-w-[120px]">Target Type</TableHead>
+              <TableHead className="whitespace-nowrap min-w-[100px]">Gateway</TableHead>
+              <TableHead className="whitespace-nowrap">User / Email</TableHead>
+              <TableHead className="whitespace-nowrap">Amount</TableHead>
+              <TableHead className="whitespace-nowrap">Adj. Type</TableHead>
+              <TableHead className="whitespace-nowrap">Status</TableHead>
+              <TableHead className="whitespace-nowrap">Created At</TableHead>
+              <TableHead className="text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -166,14 +167,24 @@ export default function BalanceRequestTable({ items }: BalanceRequestTableProps)
             {items.length > 0 ? (
               items.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="font-medium text-xs">
+                  <TableCell className="font-medium text-xs whitespace-nowrap">
                     {item.request_number}
                   </TableCell>
 
-                  <TableCell className="text-xs">
+                  <TableCell className="text-xs whitespace-nowrap">
                     <Badge variant="outline" className="font-mono">
                       {item.target_type}
                     </Badge>
+                  </TableCell>
+
+                  <TableCell className="text-xs">
+                    {item.gateway_code ? (
+                      <Badge variant="secondary" className="font-mono text-[11px]">
+                        {item.gateway_code}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
                   </TableCell>
 
                   <TableCell className="text-xs">
@@ -256,7 +267,7 @@ export default function BalanceRequestTable({ items }: BalanceRequestTableProps)
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={9}
                   className="text-center text-muted-foreground py-8"
                 >
                   No balance requests found
@@ -294,6 +305,12 @@ export default function BalanceRequestTable({ items }: BalanceRequestTableProps)
                   <p className="text-xs text-muted-foreground font-medium">Target Type</p>
                   <p className="font-semibold text-foreground mt-0.5">
                     {selectedItem.target_type}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">Gateway Code</p>
+                  <p className="font-semibold text-foreground font-mono mt-0.5">
+                    {selectedItem.gateway_code || "-"}
                   </p>
                 </div>
                 {selectedItem.product_name && (

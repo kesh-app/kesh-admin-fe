@@ -1,7 +1,10 @@
 import { ApiResponse } from "./api.type";
 
-export interface VaProduct {
+export type ProductType = 'VA' | 'USER';
+
+export interface MerchantProduct {
   id: string;
+  type?: ProductType;
   product_name: string;
   code: string;
   provider: string;
@@ -12,7 +15,8 @@ export interface VaProduct {
   deleted_at?: string | null;
 }
 
-export interface CreateVaProductRequest {
+export interface CreateMerchantProductRequest {
+  type: ProductType;
   product_name: string;
   code: string;
   provider: string;
@@ -20,7 +24,14 @@ export interface CreateVaProductRequest {
   fee_amount: number;
 }
 
-export type UpdateVaProductRequest = Partial<CreateVaProductRequest>;
+export type UpdateMerchantProductRequest = Partial<CreateMerchantProductRequest>;
 
-export type VaProductListResponse = ApiResponse<VaProduct[]>;
-export type VaProductDetailResponse = ApiResponse<VaProduct>;
+export type MerchantProductListResponse = ApiResponse<MerchantProduct[]>;
+export type MerchantProductDetailResponse = ApiResponse<MerchantProduct>;
+
+// Aliases for compatibility
+export type VaProduct = MerchantProduct;
+export type CreateVaProductRequest = CreateMerchantProductRequest;
+export type UpdateVaProductRequest = UpdateMerchantProductRequest;
+export type VaProductListResponse = MerchantProductListResponse;
+export type VaProductDetailResponse = MerchantProductDetailResponse;

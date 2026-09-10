@@ -30,28 +30,28 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { VaProduct } from '@/types/va-product.type'
-import { deleteVaProduct } from '@/app/dashboard/va-products/actions'
-import VaProductForm from './va-product-form'
+import { MerchantProduct } from '@/types/merchant-product.type'
+import { deleteMerchantProduct } from '@/app/dashboard/merchant-products/actions'
+import MerchantProductForm from './merchant-product-form'
 
-interface VaProductTableProps {
-  products: VaProduct[]
+interface MerchantProductTableProps {
+  products: MerchantProduct[]
 }
 
-export default function VaProductTable({ products }: VaProductTableProps) {
+export default function MerchantProductTable({ products }: MerchantProductTableProps) {
   const [isMounted, setIsMounted] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<VaProduct | null>(null)
+  const [editingProduct, setEditingProduct] = useState<MerchantProduct | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
   // Delete modal state
-  const [deletingProduct, setDeletingProduct] = useState<VaProduct | null>(null)
+  const [deletingProduct, setDeletingProduct] = useState<MerchantProduct | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
-  const handleEdit = (product: VaProduct) => {
+  const handleEdit = (product: MerchantProduct) => {
     setEditingProduct(product)
     setIsFormOpen(true)
   }
@@ -65,12 +65,12 @@ export default function VaProductTable({ products }: VaProductTableProps) {
     if (!deletingProduct) return
     setIsDeleting(true)
     try {
-      const result = await deleteVaProduct(deletingProduct.id)
+      const result = await deleteMerchantProduct(deletingProduct.id)
       if (result.success) {
-        toast.success('VA Product deleted successfully')
+        toast.success('Merchant Product deleted successfully')
         setDeletingProduct(null)
       } else {
-        toast.error(result.message || 'Failed to delete VA Product')
+        toast.error(result.message || 'Failed to delete Merchant Product')
       }
     } catch (err: any) {
       toast.error('An unexpected error occurred while deleting')
@@ -92,10 +92,10 @@ export default function VaProductTable({ products }: VaProductTableProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-foreground">VA Products List</h2>
+        <h2 className="text-lg font-semibold text-foreground">Merchant Products List</h2>
         <Button onClick={handleAdd} size="sm">
           <Plus className="h-4 w-4 mr-1.5" />
-          Add VA Product
+          Add Merchant Product
         </Button>
       </div>
 
@@ -104,6 +104,7 @@ export default function VaProductTable({ products }: VaProductTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Product Name</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Code</TableHead>
               <TableHead>Provider</TableHead>
               <TableHead>Closed Amount</TableHead>
@@ -119,6 +120,12 @@ export default function VaProductTable({ products }: VaProductTableProps) {
                 <TableRow key={product.id}>
                   <TableCell className="font-semibold text-foreground">
                     {product.product_name}
+                  </TableCell>
+
+                  <TableCell>
+                    <Badge variant={product.type === 'USER' ? 'secondary' : 'default'}>
+                      {product.type || 'VA'}
+                    </Badge>
                   </TableCell>
 
                   <TableCell className="font-mono text-xs">
@@ -181,10 +188,10 @@ export default function VaProductTable({ products }: VaProductTableProps) {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="text-center text-muted-foreground py-8"
                 >
-                  No VA products found
+                  No merchant products found
                 </TableCell>
               </TableRow>
             )}
@@ -192,13 +199,13 @@ export default function VaProductTable({ products }: VaProductTableProps) {
         </Table>
       </div>
 
-      <VaProductForm
+      <MerchantProductForm
         open={isFormOpen}
         onOpenChange={(open) => {
           setIsFormOpen(open)
           if (!open) setEditingProduct(null)
         }}
-        vaProduct={editingProduct}
+        merchantProduct={editingProduct}
       />
 
       <Dialog
@@ -209,7 +216,7 @@ export default function VaProductTable({ products }: VaProductTableProps) {
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Delete VA Product</DialogTitle>
+            <DialogTitle>Delete Merchant Product</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete product{' '}
               <span className="font-semibold text-foreground">

@@ -15,6 +15,7 @@ export interface BalanceRequestItem {
   target_type: BalanceRequestTargetType;
   product_name?: string | null;
   product_id?: string | null;
+  gateway_code?: string | null;
   user_id: string;
   amount: string;
   adjustment_type: BalanceAdjustmentType;

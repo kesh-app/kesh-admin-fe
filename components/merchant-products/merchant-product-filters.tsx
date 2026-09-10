@@ -1,22 +1,37 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, useMemo } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Search, RotateCcw } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { VA_PRODUCT_CODES } from '@/libs/datas/va_product_code.data'
+import { USER_PRODUCT_CODES } from '@/libs/datas/user_product.data'
 
-export default function VaProductFilters() {
+export default function MerchantProductFilters() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [provider, setProvider] = useState(searchParams.get('provider') || '')
+  const [type, setType] = useState(searchParams.get('type') || '')
 
-  const providers = VA_PRODUCT_CODES.map((item) => item.gateway_code)
+  const providers = useMemo(() => {
+    if (type === 'VA') {
+      return VA_PRODUCT_CODES.map((item) => item.gateway_code)
+    }
+    if (type === 'USER') {
+      return USER_PRODUCT_CODES.map((item) => item.gateway_code)
+    }
+    // ALL or empty: union of both
+    const allProviders = [
+      ...VA_PRODUCT_CODES.map((item) => item.gateway_code),
+      ...USER_PRODUCT_CODES.map((item) => item.gateway_code),
+    ]
+    return Array.from(new Set(allProviders))
+  }, [type])
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -30,11 +45,33 @@ export default function VaProductFilters() {
       params.delete('search')
     }
 
+    if (type && type !== 'ALL') {
+      params.set('type', type)
+    } else {
+      params.delete('type')
+    }
+
     if (provider && provider !== 'ALL') {
       params.set('provider', provider)
     } else {
       params.delete('provider')
     }
+
+    router.push(`${pathname}?${params.toString()}`)
+  }
+
+  const handleTypeChange = (newType: string) => {
+    setType(newType)
+    setProvider('') // reset provider selection if type changes
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('page', '1')
+
+    if (newType && newType !== 'ALL') {
+      params.set('type', newType)
+    } else {
+      params.delete('type')
+    }
+    params.delete('provider')
 
     router.push(`${pathname}?${params.toString()}`)
   }
@@ -56,10 +93,11 @@ export default function VaProductFilters() {
   const handleReset = () => {
     setSearch('')
     setProvider('')
+    setType('')
     router.push(pathname)
   }
 
-  const hasFilter = searchParams.has('search') || searchParams.has('provider')
+  const hasFilter = searchParams.has('search') || searchParams.has('provider') || searchParams.has('type')
 
   return (
     <div className="bg-card p-4 rounded-lg border">
@@ -77,6 +115,21 @@ export default function VaProductFilters() {
               className="pl-9 h-9"
             />
           </div>
+        </div>
+
+        <div className="w-full sm:w-36">
+          <label className="text-xs font-medium text-muted-foreground mb-1 block">
+            Type
+          </label>
+          <select
+            value={type || 'ALL'}
+            onChange={(e) => handleTypeChange(e.target.value)}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground"
+          >
+            <option value="ALL">All Types</option>
+            <option value="VA">VA</option>
+            <option value="USER">USER</option>
+          </select>
         </div>
 
         <div className="w-full sm:w-48">
