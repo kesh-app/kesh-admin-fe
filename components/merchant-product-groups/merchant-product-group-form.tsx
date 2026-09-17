@@ -37,12 +37,15 @@ import {
   createMerchantProductGroup,
   updateMerchantProductGroup,
 } from '@/app/dashboard/merchant-products/actions'
+import { VA_PRODUCT_CODES } from '@/libs/datas/va_product_code.data'
+import { USER_PRODUCT_CODES } from '@/libs/datas/user_product.data'
 
 const formSchema = z.object({
   name: z.string().min(1, 'Group name is required'),
   type: z.enum(['VA', 'USER']),
   is_active: z.boolean(),
 })
+
 
 type GroupFormValues = z.infer<typeof formSchema>
 
@@ -83,6 +86,37 @@ export default function MerchantProductGroupForm({
   })
 
   const selectedType = form.watch('type')
+
+  // Group name options based on selected type
+  const groupNameOptions = useMemo(() => {
+    if (selectedType === 'USER') {
+      return Array.from(new Set(USER_PRODUCT_CODES.map((item) => item.gateway_code)))
+    }
+    return Array.from(
+      new Set(
+        VA_PRODUCT_CODES.flatMap((gw) =>
+          gw.data_products ? gw.data_products.map((dp) => dp.product_name) : []
+        )
+      )
+    )
+  }, [selectedType])
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newType = e.target.value as 'VA' | 'USER'
+    form.setValue('type', newType, { shouldValidate: true })
+    setSelectedProducts([])
+    const options =
+      newType === 'USER'
+        ? Array.from(new Set(USER_PRODUCT_CODES.map((item) => item.gateway_code)))
+        : Array.from(
+            new Set(
+              VA_PRODUCT_CODES.flatMap((gw) =>
+                gw.data_products ? gw.data_products.map((dp) => dp.product_name) : []
+              )
+            )
+          )
+    form.setValue('name', options[0] || '', { shouldValidate: true })
+  }
 
   // Filter allProducts by selected type and search
   const filteredProducts = useMemo(() => {
@@ -133,9 +167,17 @@ export default function MerchantProductGroupForm({
 
         setSelectedProducts(initialProducts)
       } else {
+        const defaultType: 'VA' | 'USER' = 'VA'
+        const defaultOptions = Array.from(
+          new Set(
+            VA_PRODUCT_CODES.flatMap((gw) =>
+              gw.data_products ? gw.data_products.map((dp) => dp.product_name) : []
+            )
+          )
+        )
         form.reset({
-          name: '',
-          type: 'VA',
+          name: defaultOptions[0] || '',
+          type: defaultType,
           is_active: true,
         })
         setSelectedProducts([])
@@ -146,6 +188,7 @@ export default function MerchantProductGroupForm({
       setDragOverIdx(null)
     }
   }, [open, merchantProductGroup, form])
+
 
   const isProductSelected = (productId: string) =>
     selectedProducts.some((sp) => sp.product_id === productId)
@@ -295,28 +338,12 @@ export default function MerchantProductGroupForm({
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2">
-          {/* Name */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Group Name</label>
-            <Input
-              {...form.register('name')}
-              placeholder="e.g. E-WALLET / DANA"
-              className={form.formState.errors.name ? 'border-destructive' : ''}
-            />
-            {form.formState.errors.name && (
-              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
-            )}
-          </div>
-
           {/* Type */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Type</label>
             <select
               value={form.watch('type')}
-              onChange={(e) => {
-                form.setValue('type', e.target.value as 'VA' | 'USER', { shouldValidate: true })
-                setSelectedProducts([])
-              }}
+              onChange={handleTypeChange}
               className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground ${
                 form.formState.errors.type ? 'border-destructive' : ''
               }`}
@@ -328,6 +355,34 @@ export default function MerchantProductGroupForm({
               <p className="text-xs text-destructive">{form.formState.errors.type.message}</p>
             )}
           </div>
+
+          {/* Group Name */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Group Name</label>
+            <select
+              value={form.watch('name')}
+              onChange={(e) => form.setValue('name', e.target.value, { shouldValidate: true })}
+              className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-foreground ${
+                form.formState.errors.name ? 'border-destructive' : ''
+              }`}
+            >
+              <option value="" disabled>
+                Select Group Name
+              </option>
+              {groupNameOptions.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+              {form.watch('name') && !groupNameOptions.includes(form.watch('name')) && (
+                <option value={form.watch('name')}>{form.watch('name')}</option>
+              )}
+            </select>
+            {form.formState.errors.name && (
+              <p className="text-xs text-destructive">{form.formState.errors.name.message}</p>
+            )}
+          </div>
+
 
           {/* Is Active */}
           <div className="flex items-center space-x-2 pt-1">

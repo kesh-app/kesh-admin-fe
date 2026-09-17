@@ -84,7 +84,8 @@ export interface CreateMerchantProductGroupRequest {
   products: MerchantProductGroupProduct[];
 }
 
-export type UpdateMerchantProductGroupRequest = CreateMerchantProductGroupRequest;
+export type UpdateMerchantProductGroupRequest = Partial<CreateMerchantProductGroupRequest>;
 
 export type MerchantProductGroupListResponse = ApiResponse<MerchantProductGroup[]>;
 export type MerchantProductGroupDetailResponse = ApiResponse<MerchantProductGroup>;
+

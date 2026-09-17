@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { MoreHorizontal, Plus, Edit, Trash2, CheckCircle2, XCircle } from 'lucide-react'
+import { MoreHorizontal, Plus, Edit, PowerOff, Power, CheckCircle2, XCircle } from 'lucide-react'
 import { ClientDate } from '@/components/client-date'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { MerchantProduct, MerchantProductGroup } from '@/types/merchant-product.type'
-import { deleteMerchantProductGroup } from '@/app/dashboard/merchant-products/actions'
+import { updateMerchantProductGroup } from '@/app/dashboard/merchant-products/actions'
 import MerchantProductGroupForm from './merchant-product-group-form'
 
 interface MerchantProductGroupTableProps {
@@ -47,8 +47,8 @@ export default function MerchantProductGroupTable({
   const [editingGroup, setEditingGroup] = useState<MerchantProductGroup | null>(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
 
-  const [deletingGroup, setDeletingGroup] = useState<MerchantProductGroup | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [statusChangingGroup, setStatusChangingGroup] = useState<MerchantProductGroup | null>(null)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -64,21 +64,26 @@ export default function MerchantProductGroupTable({
     setIsFormOpen(true)
   }
 
-  const handleDelete = async () => {
-    if (!deletingGroup) return
-    setIsDeleting(true)
+  const handleToggleStatus = async () => {
+    if (!statusChangingGroup) return
+    setIsUpdatingStatus(true)
+    const newStatus = !statusChangingGroup.is_active
     try {
-      const result = await deleteMerchantProductGroup(deletingGroup.id)
+      const result = await updateMerchantProductGroup(statusChangingGroup.id, {
+        is_active: newStatus,
+      })
       if (result.success) {
-        toast.success('Product Group deleted successfully')
-        setDeletingGroup(null)
+        toast.success(
+          `Product Group ${newStatus ? 'activated' : 'deactivated'} successfully`
+        )
+        setStatusChangingGroup(null)
       } else {
-        toast.error(result.message || 'Failed to delete Product Group')
+        toast.error(result.message || 'Failed to update Product Group status')
       }
     } catch {
-      toast.error('An unexpected error occurred while deleting')
+      toast.error('An unexpected error occurred while updating status')
     } finally {
-      setIsDeleting(false)
+      setIsUpdatingStatus(false)
     }
   }
 
@@ -166,13 +171,23 @@ export default function MerchantProductGroupTable({
                               <Edit className="h-4 w-4 mr-2" />
                               Edit
                             </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => setDeletingGroup(group)}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
+                            {group.is_active ? (
+                              <DropdownMenuItem
+                                onClick={() => setStatusChangingGroup(group)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <PowerOff className="h-4 w-4 mr-2" />
+                                Set Inactive
+                              </DropdownMenuItem>
+                            ) : (
+                              <DropdownMenuItem
+                                onClick={() => setStatusChangingGroup(group)}
+                                className="text-green-600 focus:text-green-600"
+                              >
+                                <Power className="h-4 w-4 mr-2" />
+                                Set Active
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       ) : (
@@ -209,38 +224,46 @@ export default function MerchantProductGroupTable({
       />
 
       <Dialog
-        open={!!deletingGroup}
+        open={!!statusChangingGroup}
         onOpenChange={(open) => {
-          if (!open) setDeletingGroup(null)
+          if (!open) setStatusChangingGroup(null)
         }}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Delete Product Group</DialogTitle>
+            <DialogTitle>
+              {statusChangingGroup?.is_active
+                ? 'Deactivate Product Group'
+                : 'Activate Product Group'}
+            </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete group{' '}
+              Are you sure you want to set group{' '}
               <span className="font-semibold text-foreground">
-                {deletingGroup?.name}
-              </span>
-              ? This action cannot be undone.
+                {statusChangingGroup?.name}
+              </span>{' '}
+              to {statusChangingGroup?.is_active ? 'inactive' : 'active'}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="pt-4">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setDeletingGroup(null)}
-              disabled={isDeleting}
+              onClick={() => setStatusChangingGroup(null)}
+              disabled={isUpdatingStatus}
             >
               Cancel
             </Button>
             <Button
               type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
+              variant={statusChangingGroup?.is_active ? 'destructive' : 'default'}
+              onClick={handleToggleStatus}
+              disabled={isUpdatingStatus}
             >
-              {isDeleting ? 'Deleting...' : 'Delete'}
+              {isUpdatingStatus
+                ? 'Updating...'
+                : statusChangingGroup?.is_active
+                ? 'Set Inactive'
+                : 'Set Active'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -248,3 +271,4 @@ export default function MerchantProductGroupTable({
     </div>
   )
 }
+
