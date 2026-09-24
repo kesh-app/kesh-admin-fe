@@ -14,7 +14,7 @@ interface VATransactionDetailActionsProps {
 }
 
 /** Manual finalisation is only wired for VA Bill Payment; Ewallet PPOB is a later phase. */
-const FINALIZABLE_SUB_TYPES = ['VA_BILL_PAYMENT']
+const FINALIZABLE_SUB_TYPES = ['VA_BILL_PAYMENT','EWALLET_TOPUP']
 
 export default function VATransactionDetailActions({
   transaction,
