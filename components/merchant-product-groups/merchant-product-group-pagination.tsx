@@ -5,18 +5,20 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PaginationMeta } from '@/types/api.type'
 
-interface VaProductPaginationProps {
+interface MerchantProductGroupPaginationProps {
   meta: PaginationMeta
 }
 
-export default function VaProductPagination({ meta }: VaProductPaginationProps) {
+export default function MerchantProductGroupPagination({
+  meta,
+}: MerchantProductGroupPaginationProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString())
-    params.set('page', newPage.toString())
+    params.set('groupPage', newPage.toString())
     router.push(`${pathname}?${params.toString()}`)
   }
 
@@ -25,7 +27,7 @@ export default function VaProductPagination({ meta }: VaProductPaginationProps) 
   return (
     <div className="flex items-center justify-between px-2 py-4">
       <div className="text-sm text-muted-foreground">
-        Showing page {meta.page} of {meta.totalPages} ({meta.total} total items)
+        Showing page {meta.page} of {meta.totalPages} ({meta.total} total groups)
       </div>
       <div className="flex items-center space-x-2">
         <Button

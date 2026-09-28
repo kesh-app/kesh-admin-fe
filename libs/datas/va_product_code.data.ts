@@ -47,7 +47,7 @@ export const VA_PRODUCT_CODES: VAProductCodes = [
             { product_name: "OVO", products: [{ product_code: "OVOPLUSADM", is_closed_amount: false }] },
             { product_name: "SHOPEEPAY", products: [{ product_code: "SHOPEEPLUS", is_closed_amount: false }] },
             { product_name: "LINKAJA", products: [{ product_code: "LINKP", is_closed_amount: false }] },
-            { product_name: "BIFAST", products: [{ product_code: "TRFBANK", is_closed_amount: false }] },
+            // { product_name: "BIFAST", products: [{ product_code: "TRFBANK", is_closed_amount: false }] },
         ]
     },
     {
@@ -58,7 +58,7 @@ export const VA_PRODUCT_CODES: VAProductCodes = [
             { product_name: "OVO", products: [{ product_code: "OVO", is_closed_amount: false }] },
             { product_name: "DANA", products: [{ product_code: "DANA", is_closed_amount: false }] },
             { product_name: "SHOPEEPAY", products: [{ product_code: "SHOPEEPAY", is_closed_amount: false }] },
-            { product_name: "BIFAST", products: [{ product_code: "TRFBANK", is_closed_amount: false }] },
+            // { product_name: "BIFAST", products: [{ product_code: "TRFBANK", is_closed_amount: false }] },
         ]
     }
 ]

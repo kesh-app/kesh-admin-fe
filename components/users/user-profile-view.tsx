@@ -82,12 +82,6 @@ function QrisSummaryResolver({ promise }: { promise: Promise<QrisSummary | null>
     wide?: boolean
   }> = [
     {
-      label: 'Current Balance',
-      value: `Rp ${parseFloat(qrisSummary?.current_balance || '0').toLocaleString('id-ID')}`,
-      icon: Wallet,
-      color: 'emerald',
-    },
-    {
       label: 'Total Revenue',
       value: `Rp ${parseFloat(qrisSummary?.total_revenue || '0').toLocaleString('id-ID')}`,
       icon: TrendingUp,
@@ -136,7 +130,7 @@ function QrisSummaryResolver({ promise }: { promise: Promise<QrisSummary | null>
             <p className="text-sm font-medium">No summary data available for today</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map(({ label, value, icon: Icon, color, wide }) => (
               <div
                 key={label}
@@ -407,8 +401,8 @@ export default function UserProfileView({
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-[10px] font-black text-emerald-600/70 uppercase tracking-widest leading-none mb-1">Balance</span>
-                    <span className="text-sm md:text-base font-black text-emerald-600 truncate leading-tight">
-                      Rp {parseFloat(user.balance || '0').toLocaleString('id-ID')}
+                    <span className="text-[0.7rem] font-bold text-emerald-600 truncate leading-tight mt-1">
+                      Click detail to view
                     </span>
                   </div>
                 </div>

@@ -63,7 +63,7 @@ const navigationGroups: NavGroup[] = [
       { name: "QRIS Acquirers", href: "/dashboard/acquirers", icon: Building2 },
       { name: "Disburse Acquirer", href: "/dashboard/disburse-acquirers", icon: Banknote },
       { name: "VA Acquirers", href: "/dashboard/va-acquirers", icon: Landmark },
-      { name: "VA Products", href: "/dashboard/va-products", icon: Package },
+      { name: "Merchant Products", href: "/dashboard/merchant-products", icon: Package },
     ],
   },
   {
