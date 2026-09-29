@@ -31,7 +31,6 @@ import {
 } from 'lucide-react'
 import {
   fetchUserDisburseReports,
-  fetchDownloadUrl,
   FetchDisburseReportsResult,
 } from '@/app/dashboard/users/actions'
 import { DisburseReport } from '@/types/user.type'
@@ -57,9 +56,6 @@ export default function UserDisburseReportsModal({
   const [hasFetched, setHasFetched] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
-
-  // Track loading state per download_job_id
-  const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set())
 
   const canFetch = !!startDate && !!endDate
 
@@ -100,32 +96,18 @@ export default function UserDisburseReportsModal({
     setMeta(null)
     setHasFetched(false)
     setError(null)
-    setDownloadingIds(new Set())
     onClose()
   }
 
-  const handleDownload = async (downloadJobId: string, reportDate: string) => {
+  const handleDownload = (downloadJobId: string, reportDate: string) => {
     if (!downloadJobId) {
       toast.error('Download job ID tidak tersedia untuk laporan ini')
       return
     }
 
-    setDownloadingIds((prev) => new Set(prev).add(downloadJobId))
-    try {
-      const result = await fetchDownloadUrl(downloadJobId)
-      if (result.success && result.url) {
-        window.open(result.url, '_blank', 'noopener,noreferrer')
-        toast.success(`Laporan ${reportDate} siap diunduh`)
-      } else {
-        toast.error(result.message || 'Gagal mendapatkan URL unduhan')
-      }
-    } finally {
-      setDownloadingIds((prev) => {
-        const next = new Set(prev)
-        next.delete(downloadJobId)
-        return next
-      })
-    }
+    const downloadUrl = `/api/utils/downloads/${downloadJobId}/csv?filename=disburse_daily_report_${reportDate.replace(/\s+/g, '_')}.csv`
+    window.open(downloadUrl, '_blank')
+    toast.success(`Laporan ${reportDate} siap diunduh`)
   }
 
   const totalPages = meta?.totalPages ?? 1
@@ -294,7 +276,6 @@ export default function UserDisburseReportsModal({
                       </TableRow>
                     ) : (
                       reports.map((item, idx) => {
-                        const isDownloading = downloadingIds.has(item.downloadId)
                         const hasJobId = !!item.downloadId
                         const dateLabel = format(new Date(item.reportDate), 'dd MMM yyyy')
 
@@ -347,7 +328,7 @@ export default function UserDisburseReportsModal({
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors disabled:opacity-40"
-                                disabled={!hasJobId || isDownloading}
+                                disabled={!hasJobId}
                                 onClick={() =>
                                   handleDownload(item.downloadId, dateLabel)
                                 }
@@ -357,11 +338,7 @@ export default function UserDisburseReportsModal({
                                     : `Unduh laporan ${dateLabel}`
                                 }
                               >
-                                {isDownloading ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Download className="h-4 w-4" />
-                                )}
+                                <Download className="h-4 w-4" />
                               </Button>
                             </TableCell>
                           </TableRow>
