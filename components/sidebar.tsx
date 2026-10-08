@@ -20,6 +20,7 @@ import {
   Wallet,
   Send,
   Package,
+  Settings2,
 } from "lucide-react";
 import { cn } from "@/libs/utils";
 import { Button } from "@/components/ui/button";
@@ -72,6 +73,7 @@ const navigationGroups: NavGroup[] = [
       { name: "Users", href: "/dashboard/users", icon: Users },
       { name: "Balance Requests", href: "/dashboard/balance-requests", icon: Wallet },
       { name: "Role & Permissions", href: "/dashboard/role-permissions", icon: KeyRound },
+      { name: "Global Settings", href: "/dashboard/global-settings", icon: Settings2 },
     ],
   },
 ];
