@@ -73,15 +73,28 @@ export default function GlobalSettingForm({
 
   const watchedType = form.watch('type')
   const additionalFields = form.watch('additional_data') || []
+  const isSwagger = (setting?.type || watchedType) === 'SWAGGER'
 
   // Reset form on open / setting change
   useEffect(() => {
     if (open) {
+      const isSwaggerSetting = setting?.type === 'SWAGGER'
+      let additionalDataEntries = recordToEntries(setting?.additional_data || null)
+
+      if (isSwaggerSetting) {
+        // For SWAGGER: only username and password, password input empty on edit
+        const existingUsername = setting?.additional_data?.username || ''
+        additionalDataEntries = [
+          { key: 'username', value: existingUsername },
+          { key: 'password', value: '' },
+        ]
+      }
+
       form.reset({
         type: setting?.type || '',
         name: setting?.name || '',
         value: setting?.value || '',
-        additional_data: recordToEntries(setting?.additional_data || null),
+        additional_data: additionalDataEntries,
       })
       setShowSensitive({})
     }
@@ -114,9 +127,18 @@ export default function GlobalSettingForm({
   const isDuplicateType =
     !isEdit &&
     watchedType.length > 0 &&
-    existingTypes.map((t) => t.toUpperCase()).includes(watchedType.toUpperCase())
+    (existingTypes.map((t) => t.toUpperCase()).includes(watchedType.toUpperCase()) ||
+      watchedType.toUpperCase() === 'SWAGGER')
 
   const onSubmit = async (values: SettingFormValues) => {
+    if (!isEdit && values.type.toUpperCase() === 'SWAGGER') {
+      form.setError('type', {
+        type: 'manual',
+        message: 'Type "SWAGGER" cannot be created manually',
+      })
+      return
+    }
+
     if (isDuplicateType) {
       form.setError('type', { type: 'manual', message: `Type "${values.type}" is already in use` })
       return
@@ -124,14 +146,32 @@ export default function GlobalSettingForm({
 
     setIsLoading(true)
     try {
+      let finalAdditionalData: Record<string, string> | undefined
+
+      if (isSwagger && isEdit) {
+        const usernameEntry = values.additional_data?.find((e) => e.key === 'username')
+        const passwordEntry = values.additional_data?.find((e) => e.key === 'password')
+
+        finalAdditionalData = {
+          ...(setting?.additional_data || {}),
+          username: usernameEntry?.value ?? setting?.additional_data?.username ?? '',
+        }
+
+        // Only include password if user typed a new password (not empty)
+        if (passwordEntry?.value && passwordEntry.value.trim() !== '') {
+          finalAdditionalData.password = passwordEntry.value
+        }
+      } else if (values.additional_data && values.additional_data.length > 0) {
+        finalAdditionalData = entriesToRecord(
+          values.additional_data.filter((e) => e.key.trim() !== '')
+        )
+      }
+
       const payload = {
         type: values.type,
         name: values.name,
         value: values.value || undefined,
-        additional_data:
-          values.additional_data && values.additional_data.length > 0
-            ? entriesToRecord(values.additional_data.filter((e) => e.key.trim() !== ''))
-            : undefined,
+        additional_data: finalAdditionalData,
       }
 
       const result =
@@ -239,80 +279,144 @@ export default function GlobalSettingForm({
               </label>
             </div>
 
-            <div className="space-y-2 rounded-md border p-3 bg-muted/30">
-              {additionalFields.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-2">
-                  No fields added yet
-                </p>
-              )}
-
-              {additionalFields.map((field, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  {/* Key */}
+            {isSwagger ? (
+              <div className="space-y-3 rounded-md border p-3 bg-muted/30">
+                {/* Username */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">Username</label>
                   <Input
-                    value={field.key}
-                    onChange={(e) => updateField(index, 'key', e.target.value)}
-                    placeholder="key"
-                    className="flex-1 min-w-0 font-mono text-xs"
-                  />
-
-                  {/* Value */}
-                  <div className="relative flex-[2] min-w-0">
-                    <Input
-                      value={field.value}
-                      onChange={(e) => updateField(index, 'value', e.target.value)}
-                      placeholder="value"
-                      autoComplete="off"
-                      style={
-                        showSensitive[field.key] === false || field.key.toLowerCase().includes('password') || field.key.toLowerCase().includes('secret')
-                          ? ({ WebkitTextSecurity: showSensitive[field.key] ? 'none' : 'disc' } as React.CSSProperties)
-                          : undefined
+                    value={additionalFields.find((f) => f.key === 'username')?.value || ''}
+                    onChange={(e) => {
+                      const idx = additionalFields.findIndex((f) => f.key === 'username')
+                      if (idx >= 0) {
+                        updateField(idx, 'value', e.target.value)
+                      } else {
+                        form.setValue('additional_data', [
+                          ...additionalFields,
+                          { key: 'username', value: e.target.value },
+                        ])
                       }
+                    }}
+                    placeholder="Enter username"
+                    className="font-mono text-xs"
+                    autoComplete="off"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Password {isEdit && <span className="text-[11px] text-muted-foreground/80">(leave blank to keep current)</span>}
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showSensitive['password'] ? 'text' : 'password'}
+                      value={additionalFields.find((f) => f.key === 'password')?.value || ''}
+                      onChange={(e) => {
+                        const idx = additionalFields.findIndex((f) => f.key === 'password')
+                        if (idx >= 0) {
+                          updateField(idx, 'value', e.target.value)
+                        } else {
+                          form.setValue('additional_data', [
+                            ...additionalFields,
+                            { key: 'password', value: e.target.value },
+                          ])
+                        }
+                      }}
+                      placeholder={isEdit ? 'Enter new password to change' : 'Enter password'}
+                      autoComplete="new-password"
                       className="pr-8 font-mono text-xs"
                     />
-                    {(field.key.toLowerCase().includes('password') ||
-                      field.key.toLowerCase().includes('secret') ||
-                      field.key.toLowerCase().includes('token')) && (
-                      <button
-                        type="button"
-                        onClick={() => toggleSensitive(field.key)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showSensitive[field.key] ? (
-                          <EyeOff className="h-3.5 w-3.5" />
-                        ) : (
-                          <Eye className="h-3.5 w-3.5" />
-                        )}
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => toggleSensitive('password')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showSensitive['password'] ? (
+                        <EyeOff className="h-3.5 w-3.5" />
+                      ) : (
+                        <Eye className="h-3.5 w-3.5" />
+                      )}
+                    </button>
                   </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+                {additionalFields.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">
+                    No fields added yet
+                  </p>
+                )}
 
-                  {/* Remove */}
+                {additionalFields.map((field, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    {/* Key */}
+                    <Input
+                      value={field.key}
+                      onChange={(e) => updateField(index, 'key', e.target.value)}
+                      placeholder="key"
+                      className="flex-1 min-w-0 font-mono text-xs"
+                    />
+
+                    {/* Value */}
+                    <div className="relative flex-[2] min-w-0">
+                      <Input
+                        value={field.value}
+                        onChange={(e) => updateField(index, 'value', e.target.value)}
+                        placeholder="value"
+                        autoComplete="off"
+                        style={
+                          showSensitive[field.key] === false || field.key.toLowerCase().includes('password') || field.key.toLowerCase().includes('secret')
+                            ? ({ WebkitTextSecurity: showSensitive[field.key] ? 'none' : 'disc' } as React.CSSProperties)
+                            : undefined
+                        }
+                        className="pr-8 font-mono text-xs"
+                      />
+                      {(field.key.toLowerCase().includes('password') ||
+                        field.key.toLowerCase().includes('secret') ||
+                        field.key.toLowerCase().includes('token')) && (
+                        <button
+                          type="button"
+                          onClick={() => toggleSensitive(field.key)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showSensitive[field.key] ? (
+                            <EyeOff className="h-3.5 w-3.5" />
+                          ) : (
+                            <Eye className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Remove */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeField(index)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
+
+                <div className="pt-1 border-t border-border/50">
                   <Button
                     type="button"
                     variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeField(index)}
+                    size="sm"
+                    className="w-full text-xs text-muted-foreground h-7"
+                    onClick={addCustomField}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add field
                   </Button>
                 </div>
-              ))}
-
-              <div className="pt-1 border-t border-border/50">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs text-muted-foreground h-7"
-                  onClick={addCustomField}
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add field
-                </Button>
               </div>
-            </div>
+            )}
           </div>
 
           <DialogFooter className="pt-4">

@@ -166,14 +166,18 @@ export default function GlobalSettingCards({ settings, existingTypes }: GlobalSe
                     <Pencil className="h-3.5 w-3.5 mr-2" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={() => setDeleteTarget(setting)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
+                  {setting.type !== 'SWAGGER' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onClick={() => setDeleteTarget(setting)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </CardHeader>
