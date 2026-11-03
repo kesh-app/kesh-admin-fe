@@ -38,7 +38,13 @@ const TYPE_BADGE_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = 
 
 const SENSITIVE_KEYS = ['password', 'secret', 'token', 'key', 'private']
 
-function AdditionalDataViewer({ data }: { data: Record<string, string> | null }) {
+function AdditionalDataViewer({
+  data,
+  isSwagger,
+}: {
+  data: Record<string, string> | null
+  isSwagger?: boolean
+}) {
   const [visible, setVisible] = useState<Record<string, boolean>>({})
 
   if (!data || Object.keys(data).length === 0) {
@@ -54,8 +60,23 @@ function AdditionalDataViewer({ data }: { data: Record<string, string> | null })
   return (
     <div className="space-y-1.5">
       {Object.entries(data).map(([key, value]) => {
+        const isPasswordKey = key.toLowerCase() === 'password'
         const sensitive = isSensitive(key)
         const shown = visible[key]
+
+        // Khusus SWAGGER password, jangan tampilkan hash aslinya bahkan saat diintip (cukup tampilkan placeholder bintang-bintang permanen)
+        if (isSwagger && isPasswordKey) {
+          return (
+            <div key={key} className="flex items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground w-24 shrink-0 truncate">
+                {key}:
+              </span>
+              <span className="text-xs font-mono tracking-widest text-muted-foreground select-none">
+                ••••••••
+              </span>
+            </div>
+          )
+        }
 
         return (
           <div key={key} className="flex items-center gap-2 group">
@@ -96,6 +117,7 @@ export default function GlobalSettingCards({ settings, existingTypes }: GlobalSe
   const handleEdit = async (setting: GlobalSetting) => {
     toast.loading('Fetching details...', { id: 'fetch-setting' })
     const result = await getGlobalSettingById(setting.id)
+    console.log("client ", result)
     toast.dismiss('fetch-setting')
 
     if (result.success && result.data) {
@@ -201,7 +223,10 @@ export default function GlobalSettingCards({ settings, existingTypes }: GlobalSe
                   Additional Data
                 </p>
                 <div className="bg-muted/50 rounded-md px-2.5 py-2">
-                  <AdditionalDataViewer data={setting.additional_data} />
+                  <AdditionalDataViewer
+                    data={setting.additional_data}
+                    isSwagger={setting.type === 'SWAGGER'}
+                  />
                 </div>
               </div>
 

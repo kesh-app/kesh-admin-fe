@@ -15,9 +15,13 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Eye, EyeOff, Plus, Trash2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, Plus, Trash2 } from 'lucide-react'
 import { GlobalSetting } from '@/types/global-setting.type'
-import { createGlobalSetting, updateGlobalSetting } from '@/app/dashboard/global-settings/actions'
+import {
+  checkGlobalSettingTypeExists,
+  createGlobalSetting,
+  updateGlobalSetting,
+} from '@/app/dashboard/global-settings/actions'
 
 // --- Schema ---
 
@@ -59,6 +63,8 @@ export default function GlobalSettingForm({
 }: GlobalSettingFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [showSensitive, setShowSensitive] = useState<Record<string, boolean>>({})
+  const [isCheckingType, setIsCheckingType] = useState(false)
+  const [remoteTypeExists, setRemoteTypeExists] = useState(false)
   const isEdit = !!setting
 
   const form = useForm<SettingFormValues>({
@@ -74,6 +80,43 @@ export default function GlobalSettingForm({
   const watchedType = form.watch('type')
   const additionalFields = form.watch('additional_data') || []
   const isSwagger = (setting?.type || watchedType) === 'SWAGGER'
+
+  // Debounced check against /v1/global-settings/by-type/{type}
+  useEffect(() => {
+    if (isEdit || !watchedType) {
+      setRemoteTypeExists(false)
+      setIsCheckingType(false)
+      return
+    }
+
+    const trimmed = watchedType.trim().toUpperCase()
+    // If it's already found in existingTypes prop, we don't necessarily have to hit the API,
+    // but if not in existingTypes, check API with debounce
+    if (existingTypes.map((t) => t.toUpperCase()).includes(trimmed)) {
+      setRemoteTypeExists(true)
+      setIsCheckingType(false)
+      return
+    }
+
+    setIsCheckingType(true)
+    const timer = setTimeout(async () => {
+      try {
+        const res = await checkGlobalSettingTypeExists(trimmed)
+        if (form.getValues('type')?.trim().toUpperCase() === trimmed) {
+          setRemoteTypeExists(res.exists)
+        }
+      } catch {
+        // ignore error
+      } finally {
+        setIsCheckingType(false)
+      }
+    }, 500)
+
+    return () => {
+      clearTimeout(timer)
+      setIsCheckingType(false)
+    }
+  }, [watchedType, isEdit, existingTypes, form])
 
   // Reset form on open / setting change
   useEffect(() => {
@@ -97,6 +140,8 @@ export default function GlobalSettingForm({
         additional_data: additionalDataEntries,
       })
       setShowSensitive({})
+      setRemoteTypeExists(false)
+      setIsCheckingType(false)
     }
   }, [open, setting, form])
 
@@ -128,17 +173,9 @@ export default function GlobalSettingForm({
     !isEdit &&
     watchedType.length > 0 &&
     (existingTypes.map((t) => t.toUpperCase()).includes(watchedType.toUpperCase()) ||
-      watchedType.toUpperCase() === 'SWAGGER')
+      remoteTypeExists)
 
   const onSubmit = async (values: SettingFormValues) => {
-    if (!isEdit && values.type.toUpperCase() === 'SWAGGER') {
-      form.setError('type', {
-        type: 'manual',
-        message: 'Type "SWAGGER" cannot be created manually',
-      })
-      return
-    }
-
     if (isDuplicateType) {
       form.setError('type', { type: 'manual', message: `Type "${values.type}" is already in use` })
       return
@@ -214,15 +251,22 @@ export default function GlobalSettingForm({
               </div>
             ) : (
               <>
-                <Input
-                  value={watchedType}
-                  onChange={handleTypeChange}
-                  placeholder="e.g. SWAGGER"
-                  autoComplete="off"
-                  className={`font-mono ${
-                    form.formState.errors.type || isDuplicateType ? 'border-destructive' : ''
-                  }`}
-                />
+                <div className="relative">
+                  <Input
+                    value={watchedType}
+                    onChange={handleTypeChange}
+                    placeholder="e.g. SWAGGER"
+                    autoComplete="off"
+                    className={`font-mono ${isCheckingType ? 'pr-8' : ''} ${
+                      form.formState.errors.type || isDuplicateType ? 'border-destructive' : ''
+                    }`}
+                  />
+                  {isCheckingType && (
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  )}
+                </div>
                 {/* Duplicate warning */}
                 {isDuplicateType && (
                   <p className="text-xs text-destructive font-medium">
@@ -428,7 +472,7 @@ export default function GlobalSettingForm({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || isDuplicateType}>
+            <Button type="submit" disabled={isLoading || isDuplicateType || isCheckingType}>
               {isLoading ? 'Saving...' : isEdit ? 'Update Setting' : 'Add Setting'}
             </Button>
           </DialogFooter>

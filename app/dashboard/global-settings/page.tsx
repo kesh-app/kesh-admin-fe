@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { apiServer } from '@/libs/api-server.lib'
-import { GlobalSettingListResponse } from '@/types/global-setting.type'
+import { getGlobalSettings } from '@/app/dashboard/global-settings/actions'
 import GlobalSettingCards from '@/components/global-settings/global-setting-cards'
 import AddGlobalSettingButton from '@/components/global-settings/add-global-setting-button'
 import GlobalSettingSearch from '@/components/global-settings/global-setting-search'
@@ -15,22 +14,14 @@ export default async function GlobalSettingsPage({ searchParams }: PageProps) {
   const search = (params.search as string) || ''
   const limit = Number(params.limit) || 30
 
-  let settingsData: GlobalSettingListResponse | null = null
-  let error: string | null = null
+  const res = await getGlobalSettings({
+    page: 1,
+    limit,
+    search,
+  })
 
-  try {
-    const response = await apiServer.get<GlobalSettingListResponse>('/v1/global-settings', {
-      params: {
-        page: 1,
-        limit,
-        ...(search ? { search } : {}),
-      },
-    })
-    settingsData = response.data
-  } catch (e: any) {
-    console.error('Failed to fetch global settings:', e)
-    error = e.message || 'Failed to load global settings'
-  }
+  const settingsData = res.data
+  const error = res.success ? null : (res.message || 'Failed to load global settings')
 
   const existingTypes = settingsData?.data.map((s) => s.type) ?? []
   const meta = settingsData?.meta
