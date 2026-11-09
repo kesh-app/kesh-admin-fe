@@ -4,6 +4,7 @@ import { BalanceSweepEventListResponse } from '@/types/balance-sweep.type'
 
 import HistoryTable from '@/components/history-disburse-intrabank/history-table'
 import HistoryPagination from '@/components/history-disburse-intrabank/history-pagination'
+import AddIntrabankTransferButton from '@/components/history-disburse-intrabank/add-intrabank-transfer-button'
 
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -44,6 +45,7 @@ export default async function HistoryDisburseIntrabankPage({ searchParams }: Pag
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
           <CardTitle>Sweep Events</CardTitle>
+          <AddIntrabankTransferButton />
         </CardHeader>
         <CardContent>
           {error ? (
