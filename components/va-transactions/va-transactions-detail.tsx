@@ -80,11 +80,11 @@ export default function VATransactionsDetail({ transaction }: VATransactionsDeta
 
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Product Code</p>
-            <p className="font-medium text-sm">
+            <div className="font-medium text-sm">
               {transaction.product_code ? (
                 <Badge variant="secondary" className="font-mono text-xs">{transaction.product_code}</Badge>
               ) : '-'}
-            </p>
+            </div>
           </div>
 
           <div className="space-y-1">
