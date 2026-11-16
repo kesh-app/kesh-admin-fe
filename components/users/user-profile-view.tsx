@@ -33,6 +33,7 @@ import UserDisburseReportsModal from './user-disburse-reports-modal'
 import UserVAReportsModal from './user-va-reports-modal'
 import UserBalanceDetailModal from './user-balance-detail-modal'
 import UserVABalanceDetailModal from './user-va-balance-detail-modal'
+import UserFeeCard from './user-fee-card'
 import { useRouter } from 'next/navigation'
 
 // ---------------------------------------------------------------------------
@@ -447,6 +448,13 @@ export default function UserProfileView({
       <Suspense fallback={<QrisSummarySkeleton />}>
         <QrisSummaryResolver promise={qrisSummaryPromise} />
       </Suspense>
+
+      {/* ── Fee Configuration ── */}
+      <UserFeeCard
+        userId={user.id}
+        feeDisburse={user.project_secret?.fee_disburse}
+        feeVa={user.project_secret?.fee_va}
+      />
 
       {/* ── Sub-Merchant Section ── */}
       <div className="w-full">

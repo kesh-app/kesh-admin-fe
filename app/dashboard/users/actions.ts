@@ -166,7 +166,20 @@ export async function fetchUserVaReports(
   }
 }
 
-import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory, VABalanceDetailResponse } from '@/types/user.type'
+import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory, VABalanceDetailResponse, UpdateUserFeePayload } from '@/types/user.type'
+
+export async function updateUserFee(userId: string, payload: UpdateUserFeePayload) {
+  try {
+    const response = await apiServer.patch(`/v1/users/${userId}/fee`, payload)
+    return { success: true, message: response.data.message || 'Fee updated successfully' }
+  } catch (error: any) {
+    console.error('Failed to update fee:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Failed to update fee',
+    }
+  }
+}
 
 export async function updateUserBalance(userId: string, payload: UpdateBalancePayload) {
   try {

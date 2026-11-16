@@ -45,11 +45,15 @@ export interface ProjectSecret {
   id: string;
   project_name: string;
   callback_url: string;
+  callback_url_disburse?: string | null;
+  callback_url_va?: string | null;
   api_key: string;
   api_secret: string;
   is_status: boolean;
   can_qris: boolean;
   can_disburse: boolean;
+  fee_disburse?: string | number | null;
+  fee_va?: string | number | null;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -190,6 +194,11 @@ export interface UpdateBalancePayload {
   fund_type: 'DEBIT' | 'CREDIT';
   amount: number;
   reason?: string;
+}
+
+export interface UpdateUserFeePayload {
+  fee_va: number;
+  fee_disburse: number;
 }
 
 /** @deprecated use UpdateBalancePayload */
