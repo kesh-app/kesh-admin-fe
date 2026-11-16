@@ -5,6 +5,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import QrisDetail from '@/components/transactions/qris-detail'
 import QrisEvents from '@/components/transactions/qris-events'
+import QrisDetailActions from '@/components/transactions/qris-detail-actions'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -47,7 +48,8 @@ export default async function TransactionDetailPage({ params }: PageProps) {
           <div className="lg:col-span-2 space-y-6">
             <QrisDetail transaction={qrisData.data} />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
+            <QrisDetailActions transaction={qrisData.data} />
             <QrisEvents events={qrisData.data.events} />
           </div>
         </div>
