@@ -166,7 +166,7 @@ export async function fetchUserVaReports(
   }
 }
 
-import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory, VABalanceDetailResponse, UpdateUserFeePayload } from '@/types/user.type'
+import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory, VABalanceDetailResponse, UpdateUserFeePayload, UserVaProductFee } from '@/types/user.type'
 
 export async function updateUserFee(userId: string, payload: UpdateUserFeePayload) {
   try {
@@ -177,6 +177,52 @@ export async function updateUserFee(userId: string, payload: UpdateUserFeePayloa
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'Failed to update fee',
+    }
+  }
+}
+
+export async function getUserVaProductFees(userId: string) {
+  try {
+    const response = await apiServer.get<ApiResponse<UserVaProductFee[]>>(`/v1/users/${userId}/va-product-fees`)
+    return {
+      success: true,
+      data: response.data.data,
+    }
+  } catch (error: any) {
+    console.error('Failed to load VA product fees:', error)
+    return {
+      success: false,
+      data: [] as UserVaProductFee[],
+      message: error.response?.data?.message || error.message || 'Gagal memuat fee produk VA',
+    }
+  }
+}
+
+export async function setUserVaProductFee(userId: string, productId: string, additionalFee: number) {
+  try {
+    const response = await apiServer.put<ApiResponse<UserVaProductFee>>(
+      `/v1/users/${userId}/va-product-fees/${productId}`,
+      { additional_fee: additionalFee }
+    )
+    return { success: true, data: response.data.data }
+  } catch (error: any) {
+    console.error('Failed to set VA product fee:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Gagal menyimpan fee produk VA',
+    }
+  }
+}
+
+export async function removeUserVaProductFee(userId: string, productId: string) {
+  try {
+    await apiServer.delete(`/v1/users/${userId}/va-product-fees/${productId}`)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed to remove VA product fee:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Gagal menghapus fee produk VA',
     }
   }
 }

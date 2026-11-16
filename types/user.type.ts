@@ -201,5 +201,13 @@ export interface UpdateUserFeePayload {
   fee_disburse: number;
 }
 
+export interface UserVaProductFee {
+  merchant_product_id: string;
+  product_name: string;
+  product_code: string;
+  provider: string;
+  additional_fee: number;
+}
+
 /** @deprecated use UpdateBalancePayload */
 export type UpdateVABalancePayload = UpdateBalancePayload;

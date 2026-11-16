@@ -1,10 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Receipt, Edit3, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Receipt, Edit3, ArrowUpRight, ArrowDownLeft, Plus, Trash2, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import { getUserVaProductFees, removeUserVaProductFee } from '@/app/dashboard/users/actions'
+import { UserVaProductFee } from '@/types/user.type'
 import UserFeeEditModal from './user-fee-edit-modal'
+import UserVaProductFeeModal from './user-va-product-fee-modal'
 
 interface UserFeeCardProps {
   userId: string
@@ -18,6 +23,37 @@ export default function UserFeeCard({
   feeVa,
 }: UserFeeCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isProductFeeOpen, setIsProductFeeOpen] = useState(false)
+  const [editingProductFee, setEditingProductFee] = useState<UserVaProductFee | null>(null)
+  const [productFees, setProductFees] = useState<UserVaProductFee[]>([])
+  const [isLoadingFees, setIsLoadingFees] = useState(true)
+  const [feeError, setFeeError] = useState<string | null>(null)
+  const [removingProductId, setRemovingProductId] = useState<string | null>(null)
+
+  const loadProductFees = useCallback(async () => {
+    const result = await getUserVaProductFees(userId)
+    setProductFees(result.data)
+    setFeeError(result.success ? null : result.message || 'Gagal memuat fee produk VA')
+    setIsLoadingFees(false)
+  }, [userId])
+
+  useEffect(() => { void loadProductFees() }, [loadProductFees])
+
+  const handleRemove = async (productFee: UserVaProductFee) => {
+    if (!window.confirm(`Hapus fee khusus ${productFee.product_name} · ${productFee.provider}? Fee VA default akan berlaku kembali.`)) return
+    setRemovingProductId(productFee.merchant_product_id)
+    try {
+      const result = await removeUserVaProductFee(userId, productFee.merchant_product_id)
+      if (!result.success) {
+        toast.error(result.message || 'Gagal menghapus fee produk VA')
+        return
+      }
+      await loadProductFees()
+      toast.success('Fee khusus dihapus; Fee VA default kembali berlaku')
+    } finally {
+      setRemovingProductId(null)
+    }
+  }
 
   const numFeeDisburse = Number(feeDisburse) || 0
   const numFeeVa = Number(feeVa) || 0
@@ -30,6 +66,13 @@ export default function UserFeeCard({
         initialFeeDisburse={numFeeDisburse}
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
+      />
+      <UserVaProductFeeModal
+        userId={userId}
+        initialFee={editingProductFee}
+        isOpen={isProductFeeOpen}
+        onClose={() => setIsProductFeeOpen(false)}
+        onSaved={loadProductFees}
       />
 
       <Card className="border-none shadow-xl bg-card overflow-hidden">
@@ -69,11 +112,12 @@ export default function UserFeeCard({
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">
-                    Fee Virtual Account (VA)
+                    Fee VA Default
                   </span>
                   <span className="text-base font-extrabold text-foreground truncate mt-0.5">
                     Rp {numFeeVa.toLocaleString('id-ID')}
                   </span>
+                  <span className="text-[11px] text-muted-foreground mt-1">Berlaku jika produk belum punya fee khusus</span>
                 </div>
               </div>
             </div>
@@ -94,6 +138,72 @@ export default function UserFeeCard({
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="space-y-3 pt-2 border-t border-border/40">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h4 className="text-sm font-bold text-foreground">Fee VA per Produk &amp; Provider</h4>
+                <p className="text-xs text-muted-foreground">Fee tambahan merchant di atas fee dasar produk.</p>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => { setEditingProductFee(null); setIsProductFeeOpen(true) }}
+                className="self-start sm:self-auto"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Tambah Fee Produk
+              </Button>
+            </div>
+
+            {isLoadingFees ? (
+              <p className="text-sm text-muted-foreground py-3">Memuat fee produk VA...</p>
+            ) : feeError ? (
+              <p className="text-sm text-destructive py-3">{feeError}</p>
+            ) : productFees.length === 0 ? (
+              <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4">
+                Belum ada fee khusus. Semua produk memakai Fee VA default.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {productFees.map((productFee) => (
+                  <div key={productFee.merchant_product_id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-border/50 p-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold">{productFee.product_name}</span>
+                        <Badge variant="outline">{productFee.provider}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">Kode: {productFee.product_code}</p>
+                    </div>
+                    <div className="flex items-center gap-2 sm:shrink-0">
+                      <span className="text-sm font-bold mr-auto sm:mr-2">
+                        + Rp {Number(productFee.additional_fee).toLocaleString('id-ID')}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => { setEditingProductFee(productFee); setIsProductFeeOpen(true) }}
+                        aria-label={`Edit fee ${productFee.product_name} ${productFee.provider}`}
+                      >
+                        <Edit3 className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={removingProductId === productFee.merchant_product_id}
+                        onClick={() => void handleRemove(productFee)}
+                        aria-label={`Hapus fee ${productFee.product_name} ${productFee.provider}`}
+                      >
+                        {removingProductId === productFee.merchant_product_id
+                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          : <Trash2 className="h-3.5 w-3.5" />}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

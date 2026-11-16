@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -38,6 +38,12 @@ export default function UserFeeEditModal({
   )
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+
+  useEffect(() => {
+    if (!isOpen) return
+    setFeeVa(String(Number(initialFeeVa) || 0))
+    setFeeDisburse(String(Number(initialFeeDisburse) || 0))
+  }, [isOpen, initialFeeVa, initialFeeDisburse])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,7 +92,7 @@ export default function UserFeeEditModal({
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Fee VA (IDR)
+              Fee VA Default (IDR)
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
@@ -95,7 +101,7 @@ export default function UserFeeEditModal({
               <Input
                 type="number"
                 min="0"
-                step="any"
+                step="0.01"
                 value={feeVa}
                 onChange={(e) => setFeeVa(e.target.value)}
                 placeholder="2500"
@@ -104,7 +110,7 @@ export default function UserFeeEditModal({
               />
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Biaya per transaksi Virtual Account (VA).
+              Berlaku untuk produk VA yang belum memiliki fee tambahan khusus.
             </p>
           </div>
 
@@ -119,7 +125,7 @@ export default function UserFeeEditModal({
               <Input
                 type="number"
                 min="0"
-                step="any"
+                step="0.01"
                 value={feeDisburse}
                 onChange={(e) => setFeeDisburse(e.target.value)}
                 placeholder="1500"
