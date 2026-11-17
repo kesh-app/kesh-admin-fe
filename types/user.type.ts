@@ -209,5 +209,14 @@ export interface UserVaProductFee {
   additional_fee: number;
 }
 
+export interface UserDisburseAcquirerFee {
+  disburse_acquirer_id: string;
+  acquirer_name: string;
+  provider: string;
+  method: string;
+  base_fee: number;
+  additional_fee: number;
+}
+
 /** @deprecated use UpdateBalancePayload */
 export type UpdateVABalancePayload = UpdateBalancePayload;

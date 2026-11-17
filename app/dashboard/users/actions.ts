@@ -166,7 +166,8 @@ export async function fetchUserVaReports(
   }
 }
 
-import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory, VABalanceDetailResponse, UpdateUserFeePayload, UserVaProductFee } from '@/types/user.type'
+import { UpdateBalancePayload, UpdateVABalancePayload, BalanceHistory, VABalanceDetailResponse, UpdateUserFeePayload, UserVaProductFee, UserDisburseAcquirerFee } from '@/types/user.type'
+import { DisburseAcquirer } from '@/types/disburse-acquirer.type'
 
 export async function updateUserFee(userId: string, payload: UpdateUserFeePayload) {
   try {
@@ -223,6 +224,67 @@ export async function removeUserVaProductFee(userId: string, productId: string) 
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'Gagal menghapus fee produk VA',
+    }
+  }
+}
+
+export async function getUserDisburseAcquirerFees(userId: string) {
+  try {
+    const response = await apiServer.get<ApiResponse<UserDisburseAcquirerFee[]>>(
+      `/v1/users/${userId}/disburse-acquirer-fees`
+    )
+    return { success: true, data: response.data.data }
+  } catch (error: any) {
+    console.error('Failed to load disbursement acquirer fees:', error)
+    return {
+      success: false,
+      data: [] as UserDisburseAcquirerFee[],
+      message: error.response?.data?.message || error.message || 'Gagal memuat fee disbursement',
+    }
+  }
+}
+
+export async function getAvailableDisburseAcquirers(page = 1, search = '') {
+  try {
+    const response = await apiServer.get<ApiResponse<DisburseAcquirer[]>>('/v1/disburse-acquirers', {
+      params: { page, limit: 10, search: search || undefined, status: true },
+    })
+    return { success: true, data: response.data.data, meta: response.data.meta ?? null }
+  } catch (error: any) {
+    console.error('Failed to load disbursement acquirers:', error)
+    return {
+      success: false,
+      data: [] as DisburseAcquirer[],
+      meta: null,
+      message: error.response?.data?.message || error.message || 'Gagal memuat acquirer disbursement',
+    }
+  }
+}
+
+export async function setUserDisburseAcquirerFee(userId: string, acquirerId: string, additionalFee: number) {
+  try {
+    await apiServer.put(`/v1/users/${userId}/disburse-acquirer-fees/${acquirerId}`, {
+      additional_fee: additionalFee,
+    })
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed to set disbursement acquirer fee:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Gagal menyimpan fee disbursement',
+    }
+  }
+}
+
+export async function removeUserDisburseAcquirerFee(userId: string, acquirerId: string) {
+  try {
+    await apiServer.delete(`/v1/users/${userId}/disburse-acquirer-fees/${acquirerId}`)
+    return { success: true }
+  } catch (error: any) {
+    console.error('Failed to remove disbursement acquirer fee:', error)
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Gagal menghapus fee disbursement',
     }
   }
 }
