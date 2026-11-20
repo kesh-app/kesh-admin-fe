@@ -27,6 +27,7 @@ import { USER_PRODUCT_CODES } from '@/libs/datas/user_product.data'
 import { PaginationMeta } from '@/types/api.type'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { formatAmountInput, parseAmountInput } from '@/libs/utils'
 import {
   Table,
   TableBody,
@@ -322,12 +323,14 @@ export default function UserBalanceDetailModal({
             <div className="space-y-1.5">
               <label className="text-sm font-semibold">Amount</label>
               <input
-                type="number"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="Misal: 10000.00"
-                min="0.01"
-                step="0.01"
+                type="text"
+                inputMode="decimal"
+                value={formatAmountInput(amount)}
+                onChange={(e) => {
+                  const value = parseAmountInput(e.target.value)
+                  if (/^\d*(\.\d{0,2})?$/.test(value)) setAmount(value)
+                }}
+                placeholder="Misal: 10.000,00"
                 className="w-full h-10 px-3 border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500/30 text-sm"
                 disabled={isPending}
               />

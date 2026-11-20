@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input'
 import { apiClient } from '@/libs/api-client.lib'
 import { DisburseAcquirer, DisburseAcquirerListResponse } from '@/types/disburse-acquirer.type'
 import { createIntrabankTransfer } from '@/app/dashboard/history-disburse-intrabank/actions'
-import { cn } from '@/libs/utils'
+import { cn, formatAmountInput, parseAmountInput } from '@/libs/utils'
 
 const intrabankSchema = z.object({
   acquirer_name: z.string().min(1, 'Disburse acquirer harus dipilih'),
@@ -261,8 +261,14 @@ export default function CreateIntrabankModal({
             <Input
               id="amount"
               type="text"
-              placeholder="e.g. 250000"
+              inputMode="decimal"
+              placeholder="e.g. 250.000"
               {...form.register('amount')}
+              value={formatAmountInput(form.watch('amount'))}
+              onChange={(e) => {
+                const value = parseAmountInput(e.target.value)
+                if (/^\d*(\.\d{0,2})?$/.test(value)) form.setValue('amount', value, { shouldValidate: true })
+              }}
               className={form.formState.errors.amount ? 'border-destructive' : ''}
             />
             {form.formState.errors.amount && (

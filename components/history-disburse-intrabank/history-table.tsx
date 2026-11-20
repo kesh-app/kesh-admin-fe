@@ -78,7 +78,7 @@ export default function HistoryTable({ events }: HistoryTableProps) {
                 </TableCell>
 
                 <TableCell className="text-xs">
-                  {event.amountValue} {event.currency}
+                  {Number(event.amountValue).toLocaleString('id-ID')} {event.currency}
                 </TableCell>
 
                 <TableCell>

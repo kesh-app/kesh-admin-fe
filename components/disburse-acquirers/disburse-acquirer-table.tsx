@@ -101,7 +101,7 @@ export default function DisburseAcquirerTable({ disburseAcquirers }: DisburseAcq
                 </TableCell>
 
                 <TableCell className="text-muted-foreground font-mono text-xs">
-                  {acquirer.fee_amount || '-'}
+                  {acquirer.fee_amount == null ? '-' : Number(acquirer.fee_amount).toLocaleString('id-ID')}
                 </TableCell>
 
                 <TableCell>
