@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useController, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { toast } from 'sonner'
@@ -61,6 +61,7 @@ export default function CreateIntrabankModal({
       beneficiaryAccountNo: '',
     },
   })
+  const { field: amountField } = useController({ name: 'amount', control: form.control })
 
   // Close dropdown when clicked outside
   useEffect(() => {
@@ -263,11 +264,13 @@ export default function CreateIntrabankModal({
               type="text"
               inputMode="decimal"
               placeholder="e.g. 250.000"
-              {...form.register('amount')}
-              value={formatAmountInput(form.watch('amount'))}
+              name={amountField.name}
+              ref={amountField.ref}
+              onBlur={amountField.onBlur}
+              value={formatAmountInput(amountField.value)}
               onChange={(e) => {
                 const value = parseAmountInput(e.target.value)
-                if (/^\d*(\.\d{0,2})?$/.test(value)) form.setValue('amount', value, { shouldValidate: true })
+                if (/^\d*(\.\d{0,2})?$/.test(value)) amountField.onChange(value)
               }}
               className={form.formState.errors.amount ? 'border-destructive' : ''}
             />
