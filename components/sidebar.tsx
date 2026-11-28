@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   ShieldCheck,
   CreditCard,
+  FileText,
   Banknote,
   History,
   Landmark,
@@ -46,6 +47,7 @@ const navigationGroups: NavGroup[] = [
     title: "Transactions",
     items: [
       { name: "QRIS Transactions", href: "/dashboard/transactions", icon: CreditCard },
+      { name: "QRIS Batch Reports", href: "/dashboard/qris-batch-reports", icon: FileText },
       { name: "VA Transactions", href: "/dashboard/va-transactions", icon: Landmark },
       { name: "Disbursements", href: "/dashboard/disbursements", icon: Send },
       { name: "Disburse Intrabank", href: "/dashboard/history-disburse-intrabank", icon: History },
